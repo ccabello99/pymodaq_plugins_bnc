@@ -1,28 +1,36 @@
 import time
-import numpy as np
 from pymodaq_plugins_BNC575.hardware.device import Device
 
 class BNC575(Device):
 
     def __init__(self, ip, port):
         super().__init__(ip, port)
-        self.channel = np.array([1,2,3,4])
+        self.channel_label = "A"
+        self.slot = 1
 
     def idn(self):
         idn = self.query("*IDN").strip()
-        time.sleep(0.05)
+        time.sleep(0.25)
         return idn
-    
-    def restore_state(self,slot):
-        self.set("*RCL", str(slot))
-        time.sleep(0.05)
-    
+
     def reset(self):
         self.send("*RST")
         time.sleep(0.05)
     
-    def save_state(self,slot):
-        self.set("*SAV", str(slot))
+    @property
+    def slot(self):
+        return self._slot
+    
+    @slot.setter
+    def slot(self, slot):
+        self._slot = slot
+    
+    def save_state(self):
+        self.set("*SAV", str(self.slot))
+        time.sleep(0.05)
+    
+    def restore_state(self):
+        self.set("*RCL", str(self.slot))
         time.sleep(0.05)
     
     def trig(self):
@@ -46,36 +54,68 @@ class BNC575(Device):
     
     def close(self):
         self.com.close()
+    
+    def set_channel(self):
+        if self.channel_label == "A":
+            channel = 1
+            return channel
+        elif self.channel_label == "B":
+            channel = 2
+            return channel
+        elif self.channel_label == "C":
+            channel = 3
+            return channel
+        elif self.channel_label == "D":
+            channel = 4
+            return channel
 
-    def set_channel(self, channel_label):
-        if channel_label == "A":
-            channel = self.channel[0]
-            return channel
-        elif channel_label == "B":
-            channel = self.channel[1]
-            return channel
-        elif channel_label == "C":
-            channel = self.channel[2]
-            return channel
-        elif channel_label == "D":
-            channel = self.channel[3]
-            return channel
+    @property
+    def channel_label(self):
+        return self._channel_label
+
+    @channel_label.setter
+    def channel_label(self, channel_label):
+        self._channel_label = channel_label
         
     @property
-    def channel_mode(self, channel_label):
-        channel = self.set_channel(channel_label)
+    def channel_mode(self):
+        channel = self.set_channel()
         mode = self.query(f":PULSE{channel}:CMOD").strip()
         time.sleep(0.05)
         return mode
 
     @channel_mode.setter
-    def channel_mode(self, channel_label, mode):
-        channel = self.set_channel(channel_label)
-        if mode == "NORM" or "SING" or "BURS" or "DCYC":
-            self.set(f":PULSE{channel}:CMOD", mode)
-            time.sleep(0.05)
+    def channel_mode(self, mode):
+        channel = self.set_channel()
+        self.set(f":PULSE{channel}:CMOD", mode)
+        time.sleep(0.05)
+        
+    @property
+    def state(self):
+        channel = self.set_channel()
+        state = self.query(f":PULSE{channel}:STATE").strip()
+        time.sleep(0.05)
+        if state == "1":
+            return "ON"
         else:
-            raise ValueError("Invalid mode input. Try \"NORM\", \"SING\", \"BURS\", or \"DCYC\"")
+            return "OFF"
+
+    @state.setter    
+    def state(self, state):
+        channel = self.set_channel()
+        self.set(f":PULSE{channel}:STATE", state)
+        time.sleep(0.05)
+
+    @property
+    def trig_mode(self):
+        trig_mode = self.query(":PULSE0:TRIG:MODE").strip()
+        time.sleep(0.05)
+        return trig_mode
+
+    @trig_mode.setter
+    def trig_mode(self, mode):
+        self.set(f":PULSE0:TRIG:MODE", mode)
+        time.sleep(0.05)
         
     @property        
     def trig_thresh(self):
@@ -93,15 +133,24 @@ class BNC575(Device):
         edge = self.query(":PULSE0:TRIG:EDGE").strip()
         time.sleep(0.05)
         if edge == "RIS":
-            return "Triggered from Rising Edge"
+            return "RISING"
         else:
-            return "Triggered from Falling Edge"
+            return "FALLING"
     
     @trig_edge.setter
-    def trig_edge(self, rising):
-        EDGE = "RIS" if rising else "FALL"
-        self.set(f":PULSE0:TRIG:EDGE", EDGE)
+    def trig_edge(self, edge):
+        self.set(f":PULSE0:TRIG:EDGE", edge)
         time.sleep(0.05)
+
+    @property
+    def gate_mode(self):
+        gate_mode = self.query(":PULSE0:GATE:MODE").strip()
+        time.sleep(0.05)
+        return gate_mode
+
+    @gate_mode.setter
+    def gate_mode(self, mode):
+        self.set(f":PULSE0:GATE:MODE", mode)
 
     @property        
     def gate_thresh(self):
@@ -115,50 +164,50 @@ class BNC575(Device):
         time.sleep(0.05)
 
     @property
-    def gate_logic(self, channel_label):
+    def gate_logic(self):
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         time.sleep(0.05)
         if global_gate_mode == "CHAN":
-            channel = self.set_channel(channel_label)
+            channel = self.set_channel()
             logic = self.query(f":PULSE{channel}:CLOGIC").strip()
             time.sleep(0.05)
-            return "Active High" if logic == "HIGH" else "Active Low"
+            return logic
         else:
-            logic = self.query(f":PULSE0:LOGIC").strip()
+            logic = self.query(f":PULSE0:GATE:LOGIC").strip()
             time.sleep(0.05)
-            return "Active High" if logic == "HIGH" else "Active Low"
+            return logic
         
     @gate_logic.setter
-    def gate_logic(self, channel_label, high):
+    def gate_logic(self, logic):
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         time.sleep(0.05)
-        EDGE = "HIGH" if high else "LOW"
         if global_gate_mode == "CHAN":
-            channel = self.set_channel(channel_label)
-            self.set(f":PULSE{channel}:CLOGIC", EDGE)
+            channel = self.set_channel()
+            self.set(f":PULSE{channel}:CLOGIC", logic)
             time.sleep(0.05)
         else:
-            self.set(f":PULSE0:LOGIC", EDGE)
+            self.set(f":PULSE0:GATE:LOGIC", logic)
             time.sleep(0.05)
 
     @property
-    def channel_gate_mode(self, channel_label):
+    def channel_gate_mode(self):
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         time.sleep(0.05)
         if global_gate_mode == "CHAN":
-            channel = self.set_channel(channel_label)
+            channel = self.set_channel()
             mode = self.query(f":PULSE{channel}:CGATE").strip()
             time.sleep(0.05)
             return mode
         else:
-            return global_gate_mode
+            return "DIS"
         
     @channel_gate_mode.setter
-    def channel_gate_mode(self, channel_label, channel_gate_mode):
+    def channel_gate_mode(self, channel_gate_mode):
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
+        channel = self.set_channel()
         time.sleep(0.05)
         if global_gate_mode == "CHAN":
-            channel = self.set_channel(channel_label)
+            channel = self.set_channel()
             self.set(f":PULSE{channel}:CGATE", channel_gate_mode)
             time.sleep(0.05)
         else:
@@ -179,132 +228,78 @@ class BNC575(Device):
         time.sleep(0.05)
 
     @property
-    def delay(self, channel_label):
-        channel = self.set_channel(channel_label)
+    def delay(self):
+        channel = self.set_channel()
         delay = float(self.query(f":PULSE{channel}:DELAY").strip())
         time.sleep(0.05)
         return delay
 
     @delay.setter
-    def delay(self, channel_label, delay):
-        channel = self.set_channel(channel_label)
+    def delay(self, delay):
+        channel = self.set_channel()
         self.set(f":PULSE{channel}:DELAY", "{:10.9f}".format(delay))
         time.sleep(0.05)
 
     @property
-    def width(self, channel_label):
-        channel = self.set_channel(channel_label)
+    def width(self):
+        channel = self.set_channel()
         width = float(self.query(f":PULSE{channel}:WIDT").strip())
         time.sleep(0.05)
         return width
     
     @width.setter
-    def width(self, channel_label, width):
-        channel = self.set_channel(channel_label)
+    def width(self, width):
+        channel = self.set_channel()
         self.set(f":PULSE{channel}:WIDT", "{:10.9f}".format(width))
         time.sleep(0.05)
 
     @property
-    def amplitude(self, channel_label):
-        channel = self.set_channel(channel_label)
+    def amplitude(self):
+        channel = self.set_channel()
         amp = float(self.query(f":PULSE{channel}:OUTP:AMPL").strip())
         time.sleep(0.05)
         return amp
     
     @amplitude.setter
-    def amplitude(self, channel_label, amplitude):
-        channel = self.set_channel(channel_label)
+    def amplitude(self, amplitude):
+        channel = self.set_channel()
         self.set(f":PULSE{channel}:OUTP:AMPL", str(amplitude))
         time.sleep(0.05)
 
-    @property
-    def state(self, channel_label):
-        channel = self.set_channel(channel_label)
-        state = self.query(f":PULSE{channel}:STATE").strip()
-        time.sleep(0.05)
-        return state
-
-    @state.setter    
-    def state(self, channel_label, state):
-        channel = self.set_channel(channel_label)
-        if state == "ON" or "on":
-            self.set(f":PULSE{channel}:STATE", "ON")
-        elif state == "OFF" or "off":
-            self.set(f":PULSE{channel}:STATE", "OFF")
-        else:
-            raise ValueError("Invalid state input. Try \"ON\" or \"OFF\"")
-        time.sleep(0.05)
-        
-    def set_periodic(self):
-        self.set(f":PULSE0:MODE", "NORM")
-        time.sleep(0.05)
-
-    @property
-    def trig_mode(self):
-        trig_mode = self.query(":PULSE0:TRIG:MODE").strip()
-        if trig_mode == "TRIG":
-            return "Yes"
-        elif trig_mode == "DIS":
-            return "No"
-        else:
-            raise IOError("Wrong return from device")
-
-    @trig_mode.setter
-    def trig_mode(self, mode):
-        if mode == "TRIG" or "trig":
-            self.set(f":PULSE0:TRIG:MODE", "TRIG")
-            time.sleep(0.05)
-        elif mode == "DIS" or "dis":
-            self.set(f":PULSE0:TRIG:MODE", "DIS")
-            time.sleep(0.05)
-        else:
-            raise ValueError("Invalid input. Try \"TRIG\" or \"DIS\"")
-
-    def output(self, channel_label):
+    def output(self):
         out = {}
-        out['Channel'] = channel_label
-        mode = self.channel_mode(channel_label)
-        if mode == "NORM":
-            out['State'] = self.state(channel_label)
-            out['Continuous Mode'] = "Yes"
-            out['Amplitude (V)'] = self.amplitude(channel_label)
-            out['Period (s)'] = self.period(channel_label)
-            out['Pulse Width (s)'] = self.width(channel_label)
-            out['Pulse Delay (s)'] = self.delay(channel_label)
-            
-        elif mode == "SING":
-            out['State'] = self.state(channel_label)
-            out['Trigger Mode'] = self.trigger_mode()
-            out['Trigger Threshold'] = self.trig_thresh(channel_label)
-            out['Trigger Edge'] = self.trig_edge(channel_label)
-            out['Amplitude (V)'] = self.amplitude(channel_label)
-            out['Pulse Width (s)'] = self.width(channel_label)
-            out['Pulse Delay (s)'] = self.delay(channel_label)
-                
-
-        gate_mode = self.query(":PULSE0:GATE:MODE").strip()
-        if gate_mode == "DIS":
-            out['Gating Active'] = "No"
-            out['Gate Threshold (V)'] = self.gate_thresh(channel_label)
-            out['Gate Logic'] = self.gate_logic(channel_label)
-        elif gate_mode == "CHAN":
-            out['Gating Active'] = "Yes"
-            out['Channel Gate Mode'] = self.channel_gate_mode(channel_label)
-            out['Gate Threshold (V)'] = self.gate_thresh(channel_label)
-            out['Gate Logic'] = self.gate_logic(channel_label)
-        elif gate_mode == "PULS":
-            out['Gating Active'] = "Yes"
-            out['Gate Mode'] = gate_mode
-            out['Gate Threshold (V)'] = self.gate_thresh(channel_label)
-            out['Gate Logic'] = self.gate_logic(channel_label)
-        elif gate_mode == "OUTP":
-            out['Gating Active'] = "Yes"
-            out['Gate Mode'] = gate_mode
-            out['Gate Threshold (V)'] = self.gate_thresh(channel_label)
-            out['Gate Logic'] = self.gate_logic(channel_label)
+        out['Configuration Label'] = self.label
+        time.sleep(0.075)
+        out['Local Memory Slot'] = self.slot
+        time.sleep(0.075)
+        out['Channel'] = self.channel_label
+        time.sleep(0.075)
+        out['Channel Mode'] = self.channel_mode
+        time.sleep(0.075)
+        out['State'] = self.state
+        time.sleep(0.075)
+        out['Width (s)'] = self.width
+        time.sleep(0.075)
+        out['Amplitude (V)'] = self.amplitude
+        time.sleep(0.075)
+        out['Delay (s)'] = self.delay
+        time.sleep(0.075)
+        out['Period (s)'] = self.period
+        time.sleep(0.075)
+        out['Trigger Mode'] = self.trig_mode
+        time.sleep(0.075)
+        out['Trigger Threshold (V)'] = self.trig_thresh
+        time.sleep(0.075)
+        out['Trigger Edge'] = self.trig_edge
+        time.sleep(0.075)
+        out['Global Gate Mode'] = self.gate_mode
+        time.sleep(0.075)
+        out['Channel Gate Mode'] = self.channel_gate_mode
+        time.sleep(0.075)
+        out['Gate Threshold (V)'] = self.gate_thresh
+        time.sleep(0.075)
+        out['Gate Logic'] = self.gate_logic
+        time.sleep(0.075)
 
         return out
-
-                
-
         
