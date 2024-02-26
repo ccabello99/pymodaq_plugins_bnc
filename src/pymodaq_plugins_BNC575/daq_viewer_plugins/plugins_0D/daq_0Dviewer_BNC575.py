@@ -50,6 +50,8 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
         
     {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': 2.0, 'default': 2.0, 'min': 2.0, 'max': 20.0},
 
+    {'title': 'Polarity', 'name': 'polarity', 'type': 'list', 'value': "NORM", 'limits': ['NORM', 'COMP', 'INV']},
+
     {'title': 'Delay (s)', 'name': 'delay', 'type': 'float', 'value': 0, 'default': 0, 'min': 0, 'max': 999.0},
 
     {'title': 'Continuous Mode', 'name': 'continuous_mode', 'type': 'group', 'children': [
@@ -115,6 +117,8 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
             self.controller.width = param.value()
         elif param.name() == "amplitude":
             self.controller.amplitude = param.value()
+        elif param.name() == "polarity":
+            self.controller.polarity = param.value()            
         elif param.name() == "period":
             self.controller.period = param.value()
         elif param.name() == "trig_mode":
@@ -184,6 +188,8 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
         self.settings.param('width').setValue(data_dict['Width (s)'])
         time.sleep(0.075)
         self.settings.param('amplitude').setValue(data_dict['Amplitude (V)'])
+        time.sleep(0.075)
+        self.settings.param('polarity').setValue(data_dict['Polarity'])
         time.sleep(0.075)
         self.settings.param('delay').setValue(data_dict['Delay (s)'])
         time.sleep(0.075)

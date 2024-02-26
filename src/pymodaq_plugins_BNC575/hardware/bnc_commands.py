@@ -266,6 +266,19 @@ class BNC575(Device):
         self.set(f":PULSE{channel}:OUTP:AMPL", str(amplitude))
         time.sleep(0.05)
 
+    @property
+    def polarity(self):
+        channel = self.set_channel()
+        pol = self.query(f":PULSE{channel}:POL").strip()
+        time.sleep(0.05)
+        return pol
+    
+    @polarity.setter
+    def polarity(self, pol):
+        channel = self.set_channel()
+        self.set(f":PULSE{channel}:POL", pol)
+        time.sleep(0.05)
+
     def output(self):
         out = {}
         out['Configuration Label'] = self.label
@@ -281,6 +294,8 @@ class BNC575(Device):
         out['Width (s)'] = self.width
         time.sleep(0.075)
         out['Amplitude (V)'] = self.amplitude
+        time.sleep(0.075)
+        out['Polarity'] = self.polarity
         time.sleep(0.075)
         out['Delay (s)'] = self.delay
         time.sleep(0.075)
