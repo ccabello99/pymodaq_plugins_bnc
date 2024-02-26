@@ -162,7 +162,6 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
         time.sleep(0.05)
         self.controller.restore_state()
         time.sleep(0.05)
-        self.grab_data()
 
         info = "Whatever info you want to log"
         initialized = True
