@@ -1,7 +1,5 @@
-pymodaq_plugins_template
-########################
+pymodaq_plugins_bnc
 
-.. the following must be adapted to your developed package, links to pypi, github  description...
 
 .. image:: https://img.shields.io/pypi/v/pymodaq_plugins_template.svg
    :target: https://pypi.org/project/pymodaq_plugins_template/
@@ -19,26 +17,10 @@ pymodaq_plugins_template
     :target: https://github.com/PyMoDAQ/pymodaq_plugins_template/actions/workflows/Test.yml
 
 
-Use this template to create a repository on your account and start the development of your own PyMoDAQ plugin!
-
-
 Authors
 =======
 
-* First Author  (myemail@xxx.org)
-* Other author (myotheremail@xxx.org)
-
-.. if needed use this field
-
-    Contributors
-    ============
-
-    * First Contributor
-    * Other Contributors
-
-.. if needed use this field
-
-  Depending on the plugin type, delete/complete the fields below
+* First Author  (christian.cabello@ip-paris.fr)
 
 
 Instruments
@@ -46,43 +28,16 @@ Instruments
 
 Below is the list of instruments included in this plugin
 
-Actuators
-+++++++++
-
-* **yyy**: control of yyy actuators
-* **xxx**: control of xxx actuators
-
 Viewer0D
 ++++++++
 
-* **yyy**: control of yyy 0D detector
-* **xxx**: control of xxx 0D detector
+BNC575 Delay/Pulse Generator Interface
 
-Viewer1D
-++++++++
-
-* **yyy**: control of yyy 1D detector
-* **xxx**: control of xxx 1D detector
-
-
-Viewer2D
-++++++++
-
-* **yyy**: control of yyy 2D detector
-* **xxx**: control of xxx 2D detector
-
-
-PID Models
-==========
-
-
-Extensions
-==========
 
 
 Installation instructions
 =========================
 
-* PyMoDAQ’s version.
-* Operating system’s version.
-* What manufacturer’s drivers should be installed to make this plugin run?
+* Tested on PyMoDAQ version 4.1.0
+* Tested on Python 3.8.18
+* No additional drivers necessary
