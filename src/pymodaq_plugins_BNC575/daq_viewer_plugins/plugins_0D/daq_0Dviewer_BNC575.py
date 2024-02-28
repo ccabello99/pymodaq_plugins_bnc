@@ -10,13 +10,13 @@ from pymodaq.utils.parameter import Parameter
 class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
     """ Instrument plugin class for a OD viewer.
     
-    This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Viewer module through inheritance via
+    This object inherits all functionalities to communicate with PyMoDAQâ€™s DAQ_Viewer module through inheritance via
     DAQ_Viewer_base. It makes a bridge between the DAQ_Viewer module and the Python wrapper of a particular instrument.
 
     TODO Complete the docstring of your plugin with:
         * This is compatible with the BNC575 Delay/Pulse Generator
         * This was tested with PyMoDAQ version 4.1.0 with Python 3.8.18
-        * Installation instructions: what manufacturer’s drivers should be installed to make it run?
+        * Installation instructions: what manufacturerâ€™s drivers should be installed to make it run?
 
     Attributes:
     -----------
@@ -40,11 +40,13 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
         {'title': 'Reset Device?', 'name': 'reset', 'type': 'bool_push', 'label': 'Reset', 'value': False}
     ]},
 
+    {'title': 'Global State', 'name': 'global_state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
+
     {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': "A", 'limits': ['A', 'B', 'C', 'D']},
 
     {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
 
-    {'title': 'State', 'name': 'state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
+    {'title': 'Channel State', 'name': 'channel_state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
 
     {'title': 'Width (s)', 'name': 'width', 'type': 'float', 'value': 10e-9, 'default': 10e-9, 'min': 10e-9, 'max': 999.0},
         
@@ -104,10 +106,12 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
                 self.controller.reset()
                 time.sleep(0.05)
                 self.grab_data()
+        elif param.name() == "global_state":
+            self.controller.state = param.value()                
         elif param.name() == "channel_label":
            self.controller.channel_label = param.value()
            self.grab_data()
-        elif param.name() == "state":
+        elif param.name() == "channel_state":
             self.controller.state = param.value()
         elif param.name() == "channel_mode":
             self.controller.channel_mode = param.value()
@@ -178,11 +182,13 @@ class DAQ_0DViewer_BNC575(DAQ_Viewer_base):
 
         self.settings.child('config',  'label').setValue(data_dict['Configuration Label'])
         time.sleep(0.075)
+        self.settings.param('global_state').setValue(data_dict['Global State'])
+        time.sleep(0.075)
         self.settings.param('channel_label').setValue(data_dict['Channel'])
         time.sleep(0.075)
         self.settings.param('channel_mode').setValue(data_dict['Channel Mode'])
         time.sleep(0.075)
-        self.settings.param('state').setValue(data_dict['State'])
+        self.settings.param('channel_state').setValue(data_dict['Channel State'])
         time.sleep(0.075)
         self.settings.param('width').setValue(data_dict['Width (s)'])
         time.sleep(0.075)

@@ -48,8 +48,18 @@ class BNC575(Device):
         self.set("*LBL", "\"" + label + "\"")
         time.sleep(0.05)
         
-    def arm(self):
-        self.set(":INST:STATE", "ON")
+    @property
+    def global_state(self):
+        state = self.query(":INST:STATE").strip()
+        time.sleep(0.05)
+        return state
+
+    @global_state.setter
+    def global_state(self, state):
+        if state == "ON":
+            self.set(":INST:STATE", "ON")
+        else:
+            self.set(":INST:STATE", "OFF")
         time.sleep(0.05)
     
     def close(self):
@@ -91,7 +101,7 @@ class BNC575(Device):
         time.sleep(0.05)
         
     @property
-    def state(self):
+    def channel_state(self):
         channel = self.set_channel()
         state = self.query(f":PULSE{channel}:STATE").strip()
         time.sleep(0.05)
@@ -100,8 +110,8 @@ class BNC575(Device):
         else:
             return "OFF"
 
-    @state.setter    
-    def state(self, state):
+    @channel_state.setter    
+    def channel_state(self, state):
         channel = self.set_channel()
         self.set(f":PULSE{channel}:STATE", state)
         time.sleep(0.05)
@@ -285,11 +295,13 @@ class BNC575(Device):
         time.sleep(0.075)
         out['Local Memory Slot'] = self.slot
         time.sleep(0.075)
+        out['Global State'] = self.global_state
+        time.sleep(0.075)
         out['Channel'] = self.channel_label
         time.sleep(0.075)
         out['Channel Mode'] = self.channel_mode
         time.sleep(0.075)
-        out['State'] = self.state
+        out['Channel State'] = self.channel_state
         time.sleep(0.075)
         out['Width (s)'] = self.width
         time.sleep(0.075)
