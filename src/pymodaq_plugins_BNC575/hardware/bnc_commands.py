@@ -51,6 +51,10 @@ class BNC575(Device):
     @property
     def global_state(self):
         state = self.query(":INST:STATE").strip()
+        if state == "1":
+            return "ON"
+        else:
+            return "OFF"
         time.sleep(0.05)
         return state
 
