@@ -22,13 +22,11 @@ class DAQ_Move_bnc(DAQ_Move_base):
     controller: object
         The particular object that allow the communication with the hardware, in general a python wrapper around the
          hardware library.
-         
-    # TODO add your particular attributes here if any
 
     """
     _controller_units = 'ns'
-    is_multiaxes = True
-    _axis_names = ['Delay A', 'Delay B', 'Delay C', 'Delay D']
+    is_multiaxes = False
+    _axis_names = ['Delay']
     _epsilon = 0.25
     #data_actuator_type = DataActuatorType['DataActuator']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
@@ -59,6 +57,8 @@ class DAQ_Move_bnc(DAQ_Move_base):
     {'title': 'Channel State', 'name': 'channel_state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
 
     {'title': 'Width (s)', 'name': 'width', 'type': 'float', 'value': 10e-9, 'default': 10e-9, 'min': 10e-9, 'max': 999.0},
+
+    {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': "ADJ", 'limits': ['ADJ', 'TTL']},
         
     {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': 2.0, 'default': 2.0, 'min': 2.0, 'max': 20.0},
 
@@ -67,7 +67,8 @@ class DAQ_Move_bnc(DAQ_Move_base):
     {'title': 'Delay (s)', 'name': 'delay', 'type': 'float', 'value': 0, 'default': 0, 'min': 0, 'max': 999.0},
 
     {'title': 'Continuous Mode', 'name': 'continuous_mode', 'type': 'group', 'children': [
-        {'title': 'Period (s)', 'name': 'period', 'type': 'float', 'value': 1e-3, 'default': 1e-3, 'min': 100e-9, 'max': 5000.0}
+        {'title': 'Period (s)', 'name': 'period', 'type': 'float', 'value': 1e-3, 'default': 1e-3, 'min': 100e-9, 'max': 5000.0},
+        {'title': 'Repetition Rate (Hz)', 'name': 'rep_rate', 'type': 'float', 'value': 1e3, 'default': 1e3, 'min': 2e-4, 'max': 10e6}
     ]},
 
     {'title': 'Trigger Mode', 'name': 'trigger_mode', 'type': 'group', 'children': [
@@ -123,13 +124,18 @@ class DAQ_Move_bnc(DAQ_Move_base):
         time.sleep(0.075)
         self.settings.param('width').setValue(data_dict['Width (s)'])
         time.sleep(0.075)
+        self.settings.param('amplitude_mode').setValue(data_dict['Amplitude Mode'])
+        time.sleep(0.075)
         self.settings.param('amplitude').setValue(data_dict['Amplitude (V)'])
         time.sleep(0.075)
         self.settings.param('polarity').setValue(data_dict['Polarity'])
         time.sleep(0.075)
         self.settings.param('delay').setValue(data_dict['Delay (s)'])
         time.sleep(0.075)
+        self.get_actuator_value()
         self.settings.child('continuous_mode',  'period').setValue(data_dict['Period (s)'])
+        time.sleep(0.075)
+        self.settings.child('continuous_mode',  'rep_rate').setValue(1 / data_dict['Period (s)'])
         time.sleep(0.075)
         self.settings.child('trigger_mode',  'trig_mode').setValue(data_dict['Trigger Mode'])
         time.sleep(0.075)
@@ -186,14 +192,23 @@ class DAQ_Move_bnc(DAQ_Move_base):
             self.controller.channel_mode = param.value()
         elif param.name() == "delay":
             self.controller.delay = param.value()
+            self.get_actuator_value()
         elif param.name() == "width":
             self.controller.width = param.value()
+        elif param.name() == "amplitude_mode":
+            self.controller.amplitude_mode = param.value()
         elif param.name() == "amplitude":
             self.controller.amplitude = param.value()
         elif param.name() == "polarity":
             self.controller.polarity = param.value()            
         elif param.name() == "period":
             self.controller.period = param.value()
+            self.settings.child('continuous_mode',  'rep_rate').setValue(1 / self.controller.period)
+            time.sleep(0.075)
+        elif param.name() == "rep_rate":
+            self.controller.period = 1 / param.value()
+            self.settings.child('continuous_mode',  'period').setValue(self.controller.period)
+            time.sleep(0.075)
         elif param.name() == "trig_mode":
             self.controller.trig_mode = param.value()
         elif param.name() == "trig_thresh":
@@ -204,6 +219,8 @@ class DAQ_Move_bnc(DAQ_Move_base):
             self.controller.gate_mode = param.value()
         elif param.name() == "channel_gate_mode":
             self.controller.channel_gate_mode = param.value()
+            self.settings.child('gating',  'gate_mode').setValue(self.controller.gate_mode)
+            time.sleep(0.075)
         elif param.name() == "gate_thresh":
             self.controller.gate_thresh = param.value()
         elif param.name() == "gate_logic":            
@@ -250,7 +267,6 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.target_value = value
         self.controller.delay = self.target_value * 1e-9
         self.get_actuator_value()
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -258,24 +274,20 @@ class DAQ_Move_bnc(DAQ_Move_base):
         ----------
         value: (float) value of the relative target positioning
         """
-        self.target_value += self.current_value + value
+        self.target_value = self.current_value + value
         self.controller.delay = self.target_value * 1e-9
-        self.target_value = 0
         self.get_actuator_value()
-        #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_home(self):
         """Call the reference method of the controller"""
         self.controller.delay = 0
-        self.target_value = 0
         self.get_actuator_value()
-        #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
       self.controller.stop()
-      #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
       self.move_done()
+      self.get_actuator_value()
 
 
 if __name__ == '__main__':

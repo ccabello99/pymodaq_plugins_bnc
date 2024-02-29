@@ -281,6 +281,19 @@ class BNC575(Device):
         time.sleep(0.05)
 
     @property
+    def amplitude_mode(self):
+        channel = self.set_channel()
+        mode = self.query(f":PULSE{channel}:OUTP:MODE").strip()
+        time.sleep(0.05)
+        return mode
+    
+    @amplitude_mode.setter
+    def amplitude_mode(self, mode):
+        channel = self.set_channel()
+        self.set(f":PULSE{channel}:OUTP:MODE", mode)
+        time.sleep(0.05)
+
+    @property
     def amplitude(self):
         channel = self.set_channel()
         amp = float(self.query(f":PULSE{channel}:OUTP:AMPL").strip())
@@ -289,9 +302,13 @@ class BNC575(Device):
     
     @amplitude.setter
     def amplitude(self, amplitude):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:OUTP:AMPL", str(amplitude))
-        time.sleep(0.05)
+        amp_mode = self.amplitude_mode
+        if amp_mode == "ADJ":
+            channel = self.set_channel()
+            self.set(f":PULSE{channel}:OUTP:AMPL", str(amplitude))
+            time.sleep(0.05)
+        else:
+            return "In TTL mode. First, switch to ADJ mode."
 
     @property
     def polarity(self):
@@ -323,6 +340,8 @@ class BNC575(Device):
         out['Channel State'] = self.channel_state
         time.sleep(0.075)
         out['Width (s)'] = self.width
+        time.sleep(0.075)
+        out['Amplitude Mode'] = self.amplitude_mode
         time.sleep(0.075)
         out['Amplitude (V)'] = self.amplitude
         time.sleep(0.075)

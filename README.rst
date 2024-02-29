@@ -28,10 +28,10 @@ Instruments
 
 Below is the list of instruments included in this plugin
 
-Viewer0D
+Actuator
 ++++++++
 
-BNC575 Delay/Pulse Generator Interface
+BNC575 Delay/Pulse Generator Interface with Delay Scan Capability
 
 
 
