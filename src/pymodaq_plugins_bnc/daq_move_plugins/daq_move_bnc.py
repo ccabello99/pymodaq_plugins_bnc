@@ -6,28 +6,16 @@ from pymodaq_plugins_bnc.hardware.bnc_commands import BNC575
 import time
 
 
-class PythonWrapperOfYourInstrument:
-    #  TODO Replace this fake class with the import of the real python wrapper of your instrument
-    pass
-
-# TODO:
-# (1) change the name of the following class to DAQ_Move_TheNameOfYourChoice
-# (2) change the name of this file to daq_move_TheNameOfYourChoice ("TheNameOfYourChoice" should be the SAME
-#     for the class name and the file name.)
-# (3) this file should then be put into the right folder, namely IN THE FOLDER OF THE PLUGIN YOU ARE DEVELOPING:
-#     pymodaq_plugins_my_plugin/daq_move_plugins
-class DAQ_Move_Template(DAQ_Move_base):
+class DAQ_Move_bnc(DAQ_Move_base):
     """ Instrument plugin class for an actuator.
     
     This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
     DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
 
-    TODO Complete the docstring of your plugin with:
-        * The set of controllers and actuators that should be compatible with this instrument plugin.
-        * With which instrument and controller it has been tested.
-        * The version of PyMoDAQ during the test.
-        * The version of the operating system.
-        * Installation instructions: what manufacturer’s drivers should be installed to make it run?
+        * This is compatible with the BNC 575 Delay/Pulse Generator
+        * Tested on PyMoDAQ 4.1.1
+        * Tested on Python 3.8.18
+        * No additional drivers necessary
 
     Attributes:
     -----------
@@ -39,8 +27,8 @@ class DAQ_Move_Template(DAQ_Move_base):
 
     """
     _controller_units = 'ns'
-    is_multiaxes = False
-    _axis_names = ['Delay']
+    is_multiaxes = True
+    _axis_names = ['Delay A', 'Delay B', 'Delay C', 'Delay D']
     _epsilon = 0.25
     #data_actuator_type = DataActuatorType['DataActuator']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
