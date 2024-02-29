@@ -41,3 +41,4 @@ Installation instructions
 * Tested on PyMoDAQ version 4.1.1
 * Tested on Python 3.8.18
 * No additional drivers necessary
+* To install plugin, run this command in your environment: pip install pymodaq-plugins-bnc
