@@ -61,6 +61,8 @@ class DAQ_Move_Template(DAQ_Move_base):
     ]},
 
     {'title': 'Global State', 'name': 'global_state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
+    
+    {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
 
     {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': "A", 'limits': ['A', 'B', 'C', 'D']},
 
@@ -92,7 +94,7 @@ class DAQ_Move_Template(DAQ_Move_base):
         {'title': 'Gate Threshold (V)', 'name': 'gate_thresh', 'type': 'float', 'value': 2.5, 'default': 2.5, 'min': 0.2, 'max': 15.0},
         {'title': 'Gate Logic', 'name': 'gate_logic', 'type': 'list', 'value': 'HIGH', 'limits': ['HIGH', 'LOW']}
 
-    ]}] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon, scaling = 1e-9, min_bound = 0, max_bound=999.0)
+    ]}] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
 
@@ -106,8 +108,8 @@ class DAQ_Move_Template(DAQ_Move_base):
         -------
         float: The delay obtained after scaling conversion.
         """
-        delay = DataActuator(data=self.controller.delay)
-        delay = self.get_position_with_scaling(delay)
+        delay = DataActuator(data=self.controller.delay*1e9)
+        self.current_value = delay
         return delay
 
     def close(self):
@@ -122,6 +124,8 @@ class DAQ_Move_Template(DAQ_Move_base):
         self.settings.child('config',  'label').setValue(data_dict['Configuration Label'])
         time.sleep(0.075)
         self.settings.param('global_state').setValue(data_dict['Global State'])
+        time.sleep(0.075)
+        self.settings.param('global_mode').setValue(data_dict['Global Mode'])
         time.sleep(0.075)
         self.settings.param('channel_label').setValue(data_dict['Channel'])
         time.sleep(0.075)
@@ -182,12 +186,14 @@ class DAQ_Move_Template(DAQ_Move_base):
                 time.sleep(0.05)
                 self.grab_data()
         elif param.name() == "global_state":
-            self.controller.state = param.value()                
+            self.controller.global_state = param.value()
+        elif param.name() == "global_mode":
+            self.controller.global_mode = param.value()
         elif param.name() == "channel_label":
            self.controller.channel_label = param.value()
            self.grab_data()
         elif param.name() == "channel_state":
-            self.controller.state = param.value()
+            self.controller.channel_state = param.value()
         elif param.name() == "channel_mode":
             self.controller.channel_mode = param.value()
         elif param.name() == "delay":
@@ -247,42 +253,36 @@ class DAQ_Move_Template(DAQ_Move_base):
 
     def move_abs(self, value: DataActuator):
         """ Move the actuator to the absolute target defined by value
-
         Parameters
         ----------
         value: (float) value of the absolute target positioning
         """
-        value = self.check_bound(value)
         self.target_value = value
-        value = self.set_position_with_scaling(value)
-        self.controller.delay = value.value()
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        self.controller.delay = self.target_value * 1e-9
+        self.get_actuator_value()
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
-
         Parameters
         ----------
         value: (float) value of the relative target positioning
         """
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
-        value = self.set_position_relative_with_scaling(value)
-        self.controller.delay = value.value()
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        self.target_value += self.current_value + value
+        self.controller.delay = self.target_value * 1e-9
+        self.target_value = 0
+        self.get_actuator_value()
 
     def move_home(self):
         """Call the reference method of the controller"""
         self.controller.delay = 0
-        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+        self.target_value = 0
+        self.get_actuator_value()
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
-
-      ## TODO for your custom plugin
-      raise NotImplemented  # when writing your own plugin remove this line
-      self.controller.your_method_to_stop_positioning()  # when writing your own plugin replace this line
-      self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+      self.controller.delay
+      self.target_value = 0
+      self.get_actuator_value()
 
 
 if __name__ == '__main__':

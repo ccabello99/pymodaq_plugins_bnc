@@ -38,6 +38,6 @@ BNC575 Delay/Pulse Generator Interface
 Installation instructions
 =========================
 
-* Tested on PyMoDAQ version 4.1.0
+* Tested on PyMoDAQ version 4.1.1
 * Tested on Python 3.8.18
 * No additional drivers necessary

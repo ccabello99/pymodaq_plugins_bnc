@@ -51,12 +51,11 @@ class BNC575(Device):
     @property
     def global_state(self):
         state = self.query(":INST:STATE").strip()
+        time.sleep(0.05)
         if state == "1":
             return "ON"
         else:
             return "OFF"
-        time.sleep(0.05)
-        return state
 
     @global_state.setter
     def global_state(self, state):
@@ -66,6 +65,17 @@ class BNC575(Device):
             self.set(":INST:STATE", "OFF")
         time.sleep(0.05)
     
+    @property
+    def global_mode(self):
+        mode = self.query(":PULSE0:MODE")
+        time.sleep(0.05)
+        return mode
+    
+    @global_mode.setter
+    def global_mode(self, mode):
+        self.set(":PULSE0:MODE", mode)
+        time.sleep(0.05)
+        
     def close(self):
         self.com.close()
     
@@ -300,6 +310,8 @@ class BNC575(Device):
         out['Local Memory Slot'] = self.slot
         time.sleep(0.075)
         out['Global State'] = self.global_state
+        time.sleep(0.075)
+        out['Global Mode'] = self.global_mode
         time.sleep(0.075)
         out['Channel'] = self.channel_label
         time.sleep(0.075)
