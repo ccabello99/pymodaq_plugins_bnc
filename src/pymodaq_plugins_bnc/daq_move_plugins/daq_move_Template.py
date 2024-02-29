@@ -2,7 +2,7 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
     DataActuator  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
-from pymodaq_plugins_BNC575.hardware.bnc_commands import BNC575
+from pymodaq_plugins_bnc.hardware.bnc_commands import BNC575
 import time
 
 

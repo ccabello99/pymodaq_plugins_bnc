@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from pymodaq_plugins_BNC575.hardware.bnc_commands import BNC575
+from pymodaq_plugins_bnc.hardware.bnc_commands import BNC575
 from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, DataToExport
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main

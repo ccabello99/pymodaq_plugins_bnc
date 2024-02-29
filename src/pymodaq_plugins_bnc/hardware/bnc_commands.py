@@ -1,5 +1,5 @@
 import time
-from pymodaq_plugins_BNC575.hardware.device import Device
+from pymodaq_plugins_bnc.hardware.device import Device
 
 class BNC575(Device):
 
