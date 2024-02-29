@@ -233,6 +233,8 @@ class DAQ_Move_bnc(DAQ_Move_base):
         time.sleep(0.05)
         self.controller.restore_state()
         time.sleep(0.05)
+        self.grab_data()
+        
 
         info = "Whatever info you want to log"
         initialized = True
@@ -248,6 +250,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.target_value = value
         self.controller.delay = self.target_value * 1e-9
         self.get_actuator_value()
+        self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -259,18 +262,20 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.controller.delay = self.target_value * 1e-9
         self.target_value = 0
         self.get_actuator_value()
+        #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def move_home(self):
         """Call the reference method of the controller"""
         self.controller.delay = 0
         self.target_value = 0
         self.get_actuator_value()
+        #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
 
     def stop_motion(self):
       """Stop the actuator and emits move_done signal"""
-      self.controller.delay
-      self.target_value = 0
-      self.get_actuator_value()
+      self.controller.stop()
+      #self.emit_status(ThreadCommand('Update_Status', ['Some info you want to log']))
+      self.move_done()
 
 
 if __name__ == '__main__':

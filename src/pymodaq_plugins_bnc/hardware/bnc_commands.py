@@ -16,6 +16,9 @@ class BNC575(Device):
     def reset(self):
         self.send("*RST")
         time.sleep(0.05)
+
+    def stop(self):
+        pass
     
     @property
     def slot(self):
