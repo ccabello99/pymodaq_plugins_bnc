@@ -34,7 +34,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
     params = [
     {'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
         {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': 'BNC,575-4,31309,2.4.1-1.2.2', 'readonly': True},
-        {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': '', 'readonly': True},
+        {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': ''},
         {'title': 'Port', 'name': 'port', 'type': 'str', 'value': '', 'readonly': True}
     ]},
 
@@ -161,7 +161,9 @@ class DAQ_Move_bnc(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        if param.name() == "label":
+        if param.name() == "ip":
+            self.controller.ip = param.value()
+        elif param.name() == "label":
             self.controller.label = param.value()
         elif param.name() == "slot":
            self.controller.slot = param.value()
