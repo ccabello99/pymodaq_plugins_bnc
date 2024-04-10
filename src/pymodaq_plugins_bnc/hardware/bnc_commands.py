@@ -20,6 +20,7 @@ class BNC575(Device):
     @ip.setter
     def ip(self, ip)
         super().__init__(ip, port)
+        time.sleep(0.05)
 
     def reset(self):
         self.send("*RST")
