@@ -245,7 +245,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         """
 
         self.controller = self.ini_stage_init(old_controller=controller,
-                                              new_controller=BNC575("192.168.178.146", 2001))
+                                              new_controller=BNC575("192.168.178.67", 2001))
         
         self.settings.child('connection',  'ip').setValue(self.controller.ip)
         time.sleep(0.05)
