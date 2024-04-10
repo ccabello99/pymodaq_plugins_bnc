@@ -14,11 +14,11 @@ class BNC575(Device):
         return idn
 
     @propety
-    def ip(self)
+    def ip(self):
         return self.ip
 
     @ip.setter
-    def ip(self, ip)
+    def ip(self, ip):
         super().__init__(ip, port)
         time.sleep(0.05)
 
