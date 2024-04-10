@@ -163,6 +163,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         """
         if param.name() == "ip":
             self.controller.ip = param.value()
+            time.sleep(0.05)
         elif param.name() == "label":
             self.controller.label = param.value()
         elif param.name() == "slot":
