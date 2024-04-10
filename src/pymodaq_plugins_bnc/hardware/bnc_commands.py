@@ -13,6 +13,14 @@ class BNC575(Device):
         time.sleep(0.25)
         return idn
 
+    @propety
+    def ip(self)
+        return self.ip
+
+    @ip.setter
+    def ip(self, ip)
+        super().__init__(ip, port)
+
     def reset(self):
         self.send("*RST")
         time.sleep(0.05)
