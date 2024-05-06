@@ -1,8 +1,7 @@
 ## To modify by developer(s) of the plugin
 
 [plugin-info]
-SHORT_PLUGIN_NAME = 'bnc'  #to be modified, for instance daqmx then rename the module name:
-# (pymodaq_plugins_template become pymodaq_plugins_daqmx for instance)
+SHORT_PLUGIN_NAME = 'bnc'
 
 package-url = 'https://github.com/PyMoDAQ/pymodaq_plugins_bnc' #to modify
 description = 'PyMoDAQ module for communication and readout from BNC575 delay/signal generator'
