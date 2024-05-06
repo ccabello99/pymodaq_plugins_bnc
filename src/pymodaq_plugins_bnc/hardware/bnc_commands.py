@@ -19,7 +19,9 @@ class BNC575(Device):
 
     @ip.setter
     def ip(self, ip):
-        super().__init__(ip, self.port)
+        port = self.port
+        self.close()
+        super().__init__(ip, port)
         time.sleep(0.05)
 
     @property
@@ -28,7 +30,9 @@ class BNC575(Device):
 
     @port.setter
     def port(self, port):
-        super().__init__(self.ip, port)
+        ip = self.ip
+        self.close()
+        super().__init__(ip, port)
         time.sleep(0.05)
 
     def reset(self):
