@@ -1,7 +1,7 @@
 pymodaq_plugins_bnc
 
 
-.. image:: https://img.shields.io/pypi/v/pymodaq_plugins_template.svg
+.. image:: https://img.shields.io/pypi/v/pymodaq_plugins_bnc.svg
    :target: https://pypi.org/project/pymodaq-plugins-bnc
    :alt: Latest Version
 
@@ -9,12 +9,12 @@ pymodaq_plugins_bnc
    :target: https://pymodaq.readthedocs.io/en/stable/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_template/workflows/Upload%20Python%20Package/badge.svg
-   :target: https://github.com/PyMoDAQ/pymodaq_plugins_template
+.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_bnc/workflows/Upload%20Python%20Package/badge.svg
+   :target: https://github.com/PyMoDAQ/pymodaq_plugins_bnc
    :alt: Publication Status
 
-.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_template/actions/workflows/Test.yml/badge.svg
-    :target: https://github.com/PyMoDAQ/pymodaq_plugins_template/actions/workflows/Test.yml
+.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_bnc/actions/workflows/Test.yml/badge.svg
+    :target: https://github.com/PyMoDAQ/pymodaq_plugins_bnc/actions/workflows/Test.yml
 
 
 Authors
