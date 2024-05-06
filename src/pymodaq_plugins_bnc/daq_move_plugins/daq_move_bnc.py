@@ -162,14 +162,16 @@ class DAQ_Move_bnc(DAQ_Move_base):
             A given parameter (within detector_settings) whose value has been changed by the user
         """
         if param.name() == "ip":
-            self.controller.ip = param.value()
             port = self.controller.port
+            self.controller.close()
+            time.sleep(0.05)
             self.controller = self.ini_stage_init(old_controller=controller,
                                               new_controller=BNC575(param.value(), port))
             time.sleep(0.05)
         if param.name() == "port":
-            self.controller.port = param.value()
             ip = self.controller.ip
+            self.controller.close()
+            time.sleep(0.05)
             self.controller = self.ini_stage_init(old_controller=controller,
                                               new_controller=BNC575(ip, param.value()))
             time.sleep(0.05)
