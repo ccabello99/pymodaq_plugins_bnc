@@ -167,16 +167,16 @@ class DAQ_Move_bnc(DAQ_Move_base):
         """
         if param.name() == "ip":
             port = self.controller.port
-            self.controller.close()
+            self.close()
             time.sleep(0.05)
-            self.controller = self.ini_stage_init(old_controller=controller,
+            self.controller = self.ini_stage_init(old_controller=None,
                                               new_controller=BNC575(param.value(), port))
             time.sleep(0.05)
         if param.name() == "port":
             ip = self.controller.ip
-            self.controller.close()
+            self.close()
             time.sleep(0.05)
-            self.controller = self.ini_stage_init(old_controller=controller,
+            self.controller = self.ini_stage_init(old_controller=None,
                                               new_controller=BNC575(ip, param.value()))
             time.sleep(0.05)
         elif param.name() == "label":
