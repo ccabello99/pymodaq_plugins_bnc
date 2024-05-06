@@ -333,6 +333,10 @@ class BNC575(Device):
 
     def output(self):
         out = {}
+        out['IP Address'] = self.ip
+        time.sleep(0.075)
+        out['Port'] = self.port
+        time.sleep(0.075)
         out['Configuration Label'] = self.label
         time.sleep(0.075)
         out['Local Memory Slot'] = self.slot
