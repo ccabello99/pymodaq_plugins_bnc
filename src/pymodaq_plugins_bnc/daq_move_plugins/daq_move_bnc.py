@@ -35,7 +35,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
     {'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
         {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': 'BNC,575-4,31309,2.4.1-1.2.2', 'readonly': True},
         {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': ''},
-        {'title': 'Port', 'name': 'port', 'type': 'str', 'value': '', 'readonly': True}
+        {'title': 'Port', 'name': 'port', 'type': 'str', 'value': ''}
     ]},
 
     {'title': 'Device Configuration State', 'name': 'config', 'type': 'group', 'children': [
@@ -163,6 +163,9 @@ class DAQ_Move_bnc(DAQ_Move_base):
         """
         if param.name() == "ip":
             self.controller.ip = param.value()
+            time.sleep(0.05)
+        if param.name() == "port":
+            self.controller.port = param.value()
             time.sleep(0.05)
         elif param.name() == "label":
             self.controller.label = param.value()
