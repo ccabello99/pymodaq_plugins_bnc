@@ -2,7 +2,7 @@ pymodaq_plugins_bnc
 
 
 .. image:: https://img.shields.io/pypi/v/pymodaq_plugins_template.svg
-   :target: https://pypi.org/project/pymodaq_plugins_bnc
+   :target: https://pypi.org/project/pymodaq-plugins-bnc
    :alt: Latest Version
 
 .. image:: https://readthedocs.org/projects/pymodaq/badge/?version=latest
