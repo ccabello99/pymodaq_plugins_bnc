@@ -17,23 +17,9 @@ class BNC575(Device):
     def ip(self):
         return self.ip
 
-    @ip.setter
-    def ip(self, ip):
-        port = self.port
-        self.close()
-        super().__init__(ip, port)
-        time.sleep(0.05)
-
     @property
     def port(self):
         return self.port
-
-    @port.setter
-    def port(self, port):
-        ip = self.ip
-        self.close()
-        super().__init__(ip, port)
-        time.sleep(0.05)
 
     def reset(self):
         self.send("*RST")
