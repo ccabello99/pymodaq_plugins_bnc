@@ -109,7 +109,11 @@ class DAQ_Move_bnc(DAQ_Move_base):
         """Start a grab from the detector"""
         
         data_dict = self.controller.output()
-
+        
+        self.settings.child('connection',  'ip').setValue(data_dict['IP Address'])
+        time.sleep(0.075)
+        self.settings.child('connection',  'port').setValue(data_dict['Port'])
+        time.sleep(0.075)
         self.settings.child('config',  'label').setValue(data_dict['Configuration Label'])
         time.sleep(0.075)
         self.settings.param('global_state').setValue(data_dict['Global State'])
