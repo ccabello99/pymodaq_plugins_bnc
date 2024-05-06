@@ -9,12 +9,12 @@ pymodaq_plugins_bnc
    :target: https://pymodaq.readthedocs.io/en/stable/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_bnc/workflows/Upload%20Python%20Package/badge.svg
-   :target: https://github.com/PyMoDAQ/pymodaq_plugins_bnc
+.. image:: https://github.com/ccabello99/pymodaq_plugins_bnc/workflows/Upload%20Python%20Package/badge.svg
+   :target: https://github.com/ccabello99/pymodaq_plugins_bnc
    :alt: Publication Status
 
-.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_bnc/actions/workflows/Test.yml/badge.svg
-    :target: https://github.com/PyMoDAQ/pymodaq_plugins_bnc/actions/workflows/Test.yml
+.. image:: https://github.com/ccabello99/pymodaq_plugins_bnc/actions/workflows/Test.yml/badge.svg
+    :target: https://github.com/ccabello99/pymodaq_plugins_bnc/actions/workflows/Test.yml
 
 
 Authors
