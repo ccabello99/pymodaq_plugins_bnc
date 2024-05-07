@@ -3,7 +3,7 @@
 [plugin-info]
 SHORT_PLUGIN_NAME = 'bnc'
 
-package-url = 'https://github.com/PyMoDAQ/pymodaq_plugins_bnc' #to modify
+package-url = 'https://github.com/ccabello99/pymodaq_plugins_bnc' #to modify
 description = 'PyMoDAQ module for communication and readout from BNC575 delay/signal generator'
 
 author = 'Christian Cabello'
