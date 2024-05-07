@@ -13,10 +13,12 @@ pymodaq_plugins_bnc
     :target: https://github.com/ccabello99/pymodaq_plugins_bnc/actions/workflows/Test.yml
 
 
+BNC575 Delay/Pulse Generator Interface with Delay Scan Capability
+
 Authors
 =======
 
-* First Author  (christian.cabello@ip-paris.fr)
+* Christian Cabello
 
 
 Instruments
@@ -24,17 +26,31 @@ Instruments
 
 Below is the list of instruments included in this plugin
 
-Actuator
+Actuators
++++++++++
+
+* **BNC**: control of BNC575 Delay Generator
+
+Viewer0D
 ++++++++
 
-BNC575 Delay/Pulse Generator Interface with Delay Scan Capability
+Viewer1D
+++++++++
 
+Viewer2D
+++++++++
+
+
+PID Models
+==========
+
+
+Extensions
+==========
 
 
 Installation instructions
 =========================
 
-* Tested on PyMoDAQ version 4.1.1
-* Tested on Python 3.8.18
-* No additional drivers necessary
+* No additional drivers necessary.
 * To install plugin, run: pip install pymodaq-plugins-bnc
