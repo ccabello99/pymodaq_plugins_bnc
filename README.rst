@@ -5,10 +5,6 @@ pymodaq_plugins_bnc
    :target: https://pypi.org/project/pymodaq-plugins-bnc
    :alt: Latest Version
 
-.. image:: https://readthedocs.org/projects/pymodaq/badge/?version=latest
-   :target: https://pymodaq.readthedocs.io/en/stable/?badge=latest
-   :alt: Documentation Status
-
 .. image:: https://github.com/ccabello99/pymodaq_plugins_bnc/workflows/Upload%20Python%20Package/badge.svg
    :target: https://github.com/ccabello99/pymodaq_plugins_bnc
    :alt: Publication Status
