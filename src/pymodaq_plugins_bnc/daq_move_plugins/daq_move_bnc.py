@@ -27,7 +27,6 @@ class DAQ_Move_bnc(DAQ_Move_base):
     _controller_units = 'ns'
     is_multiaxes = False
     _axis_names = ['Delay']
-    _epsilon = 0.25
     #data_actuator_type = DataActuatorType['DataActuator']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
 
@@ -46,25 +45,18 @@ class DAQ_Move_bnc(DAQ_Move_base):
         {'title': 'Reset Device?', 'name': 'reset', 'type': 'bool_push', 'label': 'Reset', 'value': False}
     ]},
 
-    {'title': 'Global State', 'name': 'global_state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
-    
-    {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-
-    {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': "A", 'limits': ['A', 'B', 'C', 'D']},
-
-    {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-
-    {'title': 'Channel State', 'name': 'channel_state', 'type': 'list', 'value': "OFF", 'limits': ['ON', 'OFF']},
-
-    {'title': 'Width (s)', 'name': 'width', 'type': 'float', 'value': 10e-9, 'default': 10e-9, 'min': 10e-9, 'max': 999.0},
-
-    {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': "ADJ", 'limits': ['ADJ', 'TTL']},
-        
-    {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': 2.0, 'default': 2.0, 'min': 2.0, 'max': 20.0},
-
-    {'title': 'Polarity', 'name': 'polarity', 'type': 'list', 'value': "NORM", 'limits': ['NORM', 'COMP', 'INV']},
-
-    {'title': 'Delay (s)', 'name': 'delay', 'type': 'float', 'value': 0, 'default': 0, 'min': 0, 'max': 999.0},
+    {'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
+        {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': "OFF", 'limits': ['ON', 'OFF']},
+        {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
+        {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': "A", 'limits': ['A', 'B', 'C', 'D']},
+        {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
+        {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': "OFF", 'limits': ['ON', 'OFF']},
+        {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': 10, 'default': 10, 'min': 10, 'max': 999e9},
+        {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': "ADJ", 'limits': ['ADJ', 'TTL']},
+        {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': 2.0, 'default': 2.0, 'min': 2.0, 'max': 20.0},
+        {'title': 'Polarity', 'name': 'polarity', 'type': 'list', 'value': "NORM", 'limits': ['NORM', 'COMP', 'INV']},
+        {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': 0, 'default': 0, 'min': 0, 'max': 999.0},
+    ]},
 
     {'title': 'Continuous Mode', 'name': 'continuous_mode', 'type': 'group', 'children': [
         {'title': 'Period (s)', 'name': 'period', 'type': 'float', 'value': 1e-3, 'default': 1e-3, 'min': 100e-9, 'max': 5000.0},
@@ -83,7 +75,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         {'title': 'Gate Threshold (V)', 'name': 'gate_thresh', 'type': 'float', 'value': 2.5, 'default': 2.5, 'min': 0.2, 'max': 15.0},
         {'title': 'Gate Logic', 'name': 'gate_logic', 'type': 'list', 'value': 'HIGH', 'limits': ['HIGH', 'LOW']}
 
-    ]}] + comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
+    ]}]
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
 
@@ -105,7 +97,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         """Terminate the communication protocol"""
         self.controller.close()
 
-    def grab_data(self):
+    def get_config(self):
         """Start a grab from the detector"""
         
         data_dict = self.controller.output()
@@ -116,25 +108,25 @@ class DAQ_Move_bnc(DAQ_Move_base):
         time.sleep(0.075)
         self.settings.child('config',  'label').setValue(data_dict['Configuration Label'])
         time.sleep(0.075)
-        self.settings.param('global_state').setValue(data_dict['Global State'])
+        self.settings.child('output', 'global_state').setValue(data_dict['Global State'])
         time.sleep(0.075)
-        self.settings.param('global_mode').setValue(data_dict['Global Mode'])
+        self.settings.child('output', 'global_mode').setValue(data_dict['Global Mode'])
         time.sleep(0.075)
-        self.settings.param('channel_label').setValue(data_dict['Channel'])
+        self.settings.child('output', 'channel_label').setValue(data_dict['Channel'])
         time.sleep(0.075)
-        self.settings.param('channel_mode').setValue(data_dict['Channel Mode'])
+        self.settings.child('output', 'channel_mode').setValue(data_dict['Channel Mode'])
         time.sleep(0.075)
-        self.settings.param('channel_state').setValue(data_dict['Channel State'])
+        self.settings.child('output', 'channel_state').setValue(data_dict['Channel State'])
         time.sleep(0.075)
-        self.settings.param('width').setValue(data_dict['Width (s)'])
+        self.settings.child('output', 'width').setValue(data_dict['Width (s)'])
         time.sleep(0.075)
-        self.settings.param('amplitude_mode').setValue(data_dict['Amplitude Mode'])
+        self.settings.child('output', 'amplitude_mode').setValue(data_dict['Amplitude Mode'])
         time.sleep(0.075)
-        self.settings.param('amplitude').setValue(data_dict['Amplitude (V)'])
+        self.settings.child('output', 'amplitude').setValue(data_dict['Amplitude (V)'])
         time.sleep(0.075)
-        self.settings.param('polarity').setValue(data_dict['Polarity'])
+        self.settings.child('output', 'polarity').setValue(data_dict['Polarity'])
         time.sleep(0.075)
-        self.settings.param('delay').setValue(data_dict['Delay (s)'])
+        self.settings.child('output', 'delay').setValue(data_dict['Delay (s)'])
         time.sleep(0.075)
         self.get_actuator_value()
         self.settings.child('continuous_mode',  'period').setValue(data_dict['Period (s)'])
@@ -209,10 +201,10 @@ class DAQ_Move_bnc(DAQ_Move_base):
         elif param.name() == "channel_mode":
             self.controller.channel_mode = param.value()
         elif param.name() == "delay":
-            self.controller.delay = param.value()
+            self.controller.delay = param.value() * 1e-9
             self.get_actuator_value()
         elif param.name() == "width":
-            self.controller.width = param.value()
+            self.controller.width = param.value() * 1e-9
         elif param.name() == "amplitude_mode":
             self.controller.amplitude_mode = param.value()
         elif param.name() == "amplitude":
@@ -268,7 +260,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         time.sleep(0.05)
         self.controller.restore_state()
         time.sleep(0.05)
-        self.grab_data()
+        self.get_config()
         
 
         info = "Whatever info you want to log"
