@@ -4,8 +4,8 @@ import time
 class Device:
     def __init__(self, ip, port):
         self.com = telnetlib.Telnet(ip, port, 100)
-        self.ip = ip
-        self.port = port
+        self._ip = ip
+        self._port = port
 
     def send(self, msg):
         sent = False
@@ -19,7 +19,7 @@ class Device:
                 message = self.com.read_eager().decode()
                 print("RECEIVED:", message)
             except OSError:
-                self.com.open(self.ip, self.port, 100)
+                self.com.open(self._ip, self._port, 100)
         return message
 
     def query(self,msg):

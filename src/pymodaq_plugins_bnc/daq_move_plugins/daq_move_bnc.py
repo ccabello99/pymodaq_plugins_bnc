@@ -27,14 +27,15 @@ class DAQ_Move_bnc(DAQ_Move_base):
     _controller_units = 'ns'
     is_multiaxes = False
     _axis_names = ['Delay']
+    _epsilon = 0.25
     #data_actuator_type = DataActuatorType['DataActuator']  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType['float']  (or entirely remove the line)
 
     params = [
     {'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
         {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': 'BNC,575-4,31309,2.4.1-1.2.2', 'readonly': True},
-        {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': ''},
-        {'title': 'Port', 'name': 'port', 'type': 'str', 'value': ''}
+        {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': '', 'default': '192.168.178.146'},
+        {'title': 'Port', 'name': 'port', 'type': 'int', 'value': 0000, 'default': 2001}
     ]},
 
     {'title': 'Device Configuration State', 'name': 'config', 'type': 'group', 'children': [
@@ -46,11 +47,11 @@ class DAQ_Move_bnc(DAQ_Move_base):
     ]},
 
     {'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
-        {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': "OFF", 'limits': ['ON', 'OFF']},
+        {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': "OFF", 'default': "OFF", 'limits': ['ON', 'OFF']},
         {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
         {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': "A", 'limits': ['A', 'B', 'C', 'D']},
         {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': 'NORM', 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-        {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': "OFF", 'limits': ['ON', 'OFF']},
+        {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': "OFF", 'default': "OFF", 'limits': ['ON', 'OFF']},
         {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': 10, 'default': 10, 'min': 10, 'max': 999e9},
         {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': "ADJ", 'limits': ['ADJ', 'TTL']},
         {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': 2.0, 'default': 2.0, 'min': 2.0, 'max': 20.0},
@@ -75,7 +76,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         {'title': 'Gate Threshold (V)', 'name': 'gate_thresh', 'type': 'float', 'value': 2.5, 'default': 2.5, 'min': 0.2, 'max': 15.0},
         {'title': 'Gate Logic', 'name': 'gate_logic', 'type': 'list', 'value': 'HIGH', 'limits': ['HIGH', 'LOW']}
 
-    ]}]
+    ]}]+comon_parameters_fun(is_multiaxes, axis_names=_axis_names, epsilon=_epsilon)
     # _epsilon is the initial default value for the epsilon parameter allowing pymodaq to know if the controller reached
     # the target value. It is the developer responsibility to put here a meaningful value
 
@@ -118,7 +119,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         time.sleep(0.075)
         self.settings.child('output', 'channel_state').setValue(data_dict['Channel State'])
         time.sleep(0.075)
-        self.settings.child('output', 'width').setValue(data_dict['Width (s)'])
+        self.settings.child('output', 'width').setValue(data_dict['Width (ns)'])
         time.sleep(0.075)
         self.settings.child('output', 'amplitude_mode').setValue(data_dict['Amplitude Mode'])
         time.sleep(0.075)
@@ -126,7 +127,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         time.sleep(0.075)
         self.settings.child('output', 'polarity').setValue(data_dict['Polarity'])
         time.sleep(0.075)
-        self.settings.child('output', 'delay').setValue(data_dict['Delay (s)'])
+        self.settings.child('output', 'delay').setValue(data_dict['Delay (ns)'])
         time.sleep(0.075)
         self.get_actuator_value()
         self.settings.child('continuous_mode',  'period').setValue(data_dict['Period (s)'])
@@ -183,19 +184,19 @@ class DAQ_Move_bnc(DAQ_Move_base):
             if param.value:
                 self.controller.restore_state()
                 time.sleep(0.05)
-                self.grab_data()
+                self.get_config()
         elif param.name() == "reset":
             if param.value:
                 self.controller.reset()
                 time.sleep(0.05)
-                self.grab_data()
+                self.get_config()
         elif param.name() == "global_state":
             self.controller.global_state = param.value()
         elif param.name() == "global_mode":
             self.controller.global_mode = param.value()
         elif param.name() == "channel_label":
            self.controller.channel_label = param.value()
-           self.grab_data()
+           self.get_config()
         elif param.name() == "channel_state":
             self.controller.channel_state = param.value()
         elif param.name() == "channel_mode":

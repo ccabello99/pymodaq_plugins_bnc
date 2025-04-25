@@ -15,11 +15,11 @@ class BNC575(Device):
 
     @property
     def ip(self):
-        return self.ip
+        return self._ip
 
     @property
     def port(self):
-        return self.port
+        return self._port
 
     def reset(self):
         self.send("*RST")
@@ -351,7 +351,7 @@ class BNC575(Device):
         time.sleep(0.075)
         out['Channel State'] = self.channel_state
         time.sleep(0.075)
-        out['Width (s)'] = self.width
+        out['Width (ns)'] = self.width * 1e9
         time.sleep(0.075)
         out['Amplitude Mode'] = self.amplitude_mode
         time.sleep(0.075)
@@ -359,7 +359,7 @@ class BNC575(Device):
         time.sleep(0.075)
         out['Polarity'] = self.polarity
         time.sleep(0.075)
-        out['Delay (s)'] = self.delay
+        out['Delay (ns)'] = self.delay * 1e9
         time.sleep(0.075)
         out['Period (s)'] = self.period
         time.sleep(0.075)
@@ -379,4 +379,3 @@ class BNC575(Device):
         time.sleep(0.075)
 
         return out
-        
