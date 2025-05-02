@@ -1,17 +1,34 @@
 import time
-from pymodaq_plugins_bnc.hardware.device import Device
+from pymodaq_plugins_bnc.hardware.device import AsyncDevice
+import asyncio
 
-class BNC575(Device):
+class BNC575(AsyncDevice):
 
     def __init__(self, ip, port):
         super().__init__(ip, port)
         self.channel_label = "A"
         self.slot = 1
 
-    def idn(self):
-        idn = self.query("*IDN").strip()
-        time.sleep(0.25)
-        return idn
+    async def connect(self):
+        await super().connect()
+
+    async def idn(self):
+        return (await self.query("*IDN")).strip()
+
+    def set_channel(self):
+        return {"A": 1, "B": 2, "C": 3, "D": 4}.get(self.channel_label, 1)
+
+    async def reset(self):
+        await self.send("*RST")
+
+    async def save_state(self):
+        await self.set("*SAV", str(self.slot))
+
+    async def restore_state(self):
+        await self.set("*RCL", str(self.slot))
+
+    async def trig(self):
+        await self.send("*TRG")
 
     @property
     def ip(self):
@@ -21,361 +38,223 @@ class BNC575(Device):
     def port(self):
         return self._port
 
-    def reset(self):
-        self.send("*RST")
-        time.sleep(0.05)
-
-    def stop(self):
-        pass
-    
     @property
     def slot(self):
         return self._slot
-    
-    @slot.setter
-    def slot(self, slot):
-        self._slot = slot
-    
-    def save_state(self):
-        self.set("*SAV", str(self.slot))
-        time.sleep(0.05)
-    
-    def restore_state(self):
-        self.set("*RCL", str(self.slot))
-        time.sleep(0.05)
-    
-    def trig(self):
-        self.send("*TRG")
-        time.sleep(0.05)
-    
-    @property
-    def label(self):
-        lbl = self.query("*LBL").strip()
-        time.sleep(0.05)
-        return lbl
-    
-    @label.setter
-    def label(self, label):
-        self.set("*LBL", "\"" + label + "\"")
-        time.sleep(0.05)
-        
-    @property
-    def global_state(self):
-        state = self.query(":INST:STATE").strip()
-        time.sleep(0.05)
-        if state == "1":
-            return "ON"
-        else:
-            return "OFF"
 
-    @global_state.setter
-    def global_state(self, state):
-        if state == "ON":
-            self.set(":INST:STATE", "ON")
-        else:
-            self.set(":INST:STATE", "OFF")
-        time.sleep(0.05)
-    
-    @property
-    def global_mode(self):
-        mode = self.query(":PULSE0:MODE")
-        time.sleep(0.05)
-        return mode
-    
-    @global_mode.setter
-    def global_mode(self, mode):
-        self.set(":PULSE0:MODE", mode)
-        time.sleep(0.05)
-        
-    def close(self):
-        self.com.close()
-    
-    def set_channel(self):
-        if self.channel_label == "A":
-            channel = 1
-            return channel
-        elif self.channel_label == "B":
-            channel = 2
-            return channel
-        elif self.channel_label == "C":
-            channel = 3
-            return channel
-        elif self.channel_label == "D":
-            channel = 4
-            return channel
+    @slot.setter
+    def slot(self, value):
+        self._slot = value
 
     @property
     def channel_label(self):
         return self._channel_label
 
     @channel_label.setter
-    def channel_label(self, channel_label):
-        self._channel_label = channel_label
-        
-    @property
-    def channel_mode(self):
-        channel = self.set_channel()
-        mode = self.query(f":PULSE{channel}:CMOD").strip()
-        time.sleep(0.05)
-        return mode
+    def channel_label(self, value):
+        self._channel_label = value
 
-    @channel_mode.setter
-    def channel_mode(self, mode):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:CMOD", mode)
-        time.sleep(0.05)
-        
-    @property
-    def channel_state(self):
-        channel = self.set_channel()
-        state = self.query(f":PULSE{channel}:STATE").strip()
-        time.sleep(0.05)
-        if state == "1":
-            return "ON"
+    async def get_label(self):
+        return (await self.query("*LBL")).strip()
+
+    async def set_label(self, value):
+        await self.set("*LBL", f'"{value}"')
+
+    async def get_global_state(self):
+        state = (await self.query(":INST:STATE")).strip()
+        return "ON" if state == "1" else "OFF"
+
+    async def set_global_state(self, state):
+        await self.set(":INST:STATE", state)
+
+    async def get_global_mode(self):
+        return await self.query(":PULSE0:MODE")
+
+    async def set_global_mode(self, mode):
+        await self.set(":PULSE0:MODE", mode)
+
+    async def get_channel_mode(self):
+        ch = self.set_channel()
+        return (await self.query(f":PULSE{ch}:CMOD")).strip()
+
+    async def set_channel_mode(self, mode):
+        ch = self.set_channel()
+        await self.set(f":PULSE{ch}:CMOD", mode)
+
+    async def get_channel_state(self):
+        ch = self.set_channel()
+        state = (await self.query(f":PULSE{ch}:STATE")).strip()
+        return "ON" if state == "1" else "OFF"
+
+    async def set_channel_state(self, state):
+        ch = self.set_channel()
+        await self.set(f":PULSE{ch}:STATE", state)
+
+    async def get_trig_mode(self):
+        return (await self.query(":PULSE0:TRIG:MODE")).strip()
+
+    async def set_trig_mode(self, mode):
+        await self.set(":PULSE0:TRIG:MODE", mode)
+
+    async def get_trig_thresh(self):
+        return float((await self.query(":PULSE0:TRIG:LEV")).strip())
+
+    async def set_trig_thresh(self, val):
+        await self.set(":PULSE0:TRIG:LEV", str(val))
+
+    async def get_trig_edge(self):
+        edge = (await self.query(":PULSE0:TRIG:EDGE")).strip()
+        return "RISING" if edge == "RIS" else "FALLING"
+
+    async def set_trig_edge(self, edge):
+        await self.set(":PULSE0:TRIG:EDGE", edge)
+
+    async def get_gate_mode(self):
+        return (await self.query(":PULSE0:GATE:MODE")).strip()
+
+    async def set_gate_mode(self, mode):
+        await self.set(":PULSE0:GATE:MODE", mode)
+
+    async def get_gate_thresh(self):
+        return float((await self.query(":PULSE0:GATE:LEV")).strip())
+
+    async def set_gate_thresh(self, thresh):
+        await self.set(":PULSE0:GATE:LEV", str(thresh))
+
+    async def get_gate_logic(self):
+        mode = (await self.query(":PULSE0:GATE:MODE")).strip()
+        if mode == "CHAN":
+            ch = self.set_channel()
+            return (await self.query(f":PULSE{ch}:CLOGIC")).strip()
+        return (await self.query(":PULSE0:GATE:LOGIC")).strip()
+
+    async def set_gate_logic(self, logic):
+        mode = (await self.query(":PULSE0:GATE:MODE")).strip()
+        ch = self.set_channel()
+        if mode == "CHAN":
+            await self.set(f":PULSE{ch}:CLOGIC", logic)
         else:
-            return "OFF"
+            await self.set(":PULSE0:GATE:LOGIC", logic)
 
-    @channel_state.setter    
-    def channel_state(self, state):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:STATE", state)
-        time.sleep(0.05)
+    async def get_channel_gate_mode(self):
+        mode = (await self.query(":PULSE0:GATE:MODE")).strip()
+        if mode == "CHAN":
+            ch = self.set_channel()
+            return (await self.query(f":PULSE{ch}:CGATE")).strip()
+        return "DIS"
 
-    @property
-    def trig_mode(self):
-        trig_mode = self.query(":PULSE0:TRIG:MODE").strip()
-        time.sleep(0.05)
-        return trig_mode
+    async def set_channel_gate_mode(self, mode):
+        ch = self.set_channel()
+        cur_mode = (await self.query(":PULSE0:GATE:MODE")).strip()
+        if cur_mode != "CHAN":
+            await self.set(":PULSE0:GATE:MODE", "CHAN")
+        await self.set(f":PULSE{ch}:CGATE", mode)
 
-    @trig_mode.setter
-    def trig_mode(self, mode):
-        self.set(f":PULSE0:TRIG:MODE", mode)
-        time.sleep(0.05)
-        
-    @property        
-    def trig_thresh(self):
-        thresh = float(self.query(":PULSE0:TRIG:LEV").strip())
-        time.sleep(0.05)
-        return thresh
-    
-    @trig_thresh.setter
-    def trig_thresh(self, thresh):
-        self.set(f":PULSE0:TRIG:LEV", str(thresh))
-        time.sleep(0.05)
+    async def get_period(self):
+        return float((await self.query(":PULSE0:PER")).strip())
 
-    @property
-    def trig_edge(self):
-        edge = self.query(":PULSE0:TRIG:EDGE").strip()
-        time.sleep(0.05)
-        if edge == "RIS":
-            return "RISING"
-        else:
-            return "FALLING"
-    
-    @trig_edge.setter
-    def trig_edge(self, edge):
-        self.set(f":PULSE0:TRIG:EDGE", edge)
-        time.sleep(0.05)
+    async def set_period(self, val):
+        await self.set(":PULSE0:PER", str(val))
 
-    @property
-    def gate_mode(self):
-        gate_mode = self.query(":PULSE0:GATE:MODE").strip()
-        time.sleep(0.05)
-        return gate_mode
+    async def get_delay(self):
+        ch = self.set_channel()
+        return float((await self.query(f":PULSE{ch}:DELAY")).strip())
 
-    @gate_mode.setter
-    def gate_mode(self, mode):
-        self.set(f":PULSE0:GATE:MODE", mode)
+    async def set_delay(self, val):
+        ch = self.set_channel()
+        await self.set(f":PULSE{ch}:DELAY", f"{val:.9f}")
 
-    @property        
-    def gate_thresh(self):
-        thresh = float(self.query(":PULSE0:GATE:LEV").strip())
-        time.sleep(0.05)
-        return thresh
-    
-    @gate_thresh.setter
-    def gate_thresh(self, thresh):
-        self.set(f":PULSE0:GATE:LEV", str(thresh))
-        time.sleep(0.05)
+    async def get_width(self):
+        ch = self.set_channel()
+        return float((await self.query(f":PULSE{ch}:WIDT")).strip())
 
-    @property
-    def gate_logic(self):
-        global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
-        time.sleep(0.05)
-        if global_gate_mode == "CHAN":
-            channel = self.set_channel()
-            logic = self.query(f":PULSE{channel}:CLOGIC").strip()
-            time.sleep(0.05)
-            return logic
-        else:
-            logic = self.query(f":PULSE0:GATE:LOGIC").strip()
-            time.sleep(0.05)
-            return logic
-        
-    @gate_logic.setter
-    def gate_logic(self, logic):
-        global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
-        time.sleep(0.05)
-        if global_gate_mode == "CHAN":
-            channel = self.set_channel()
-            self.set(f":PULSE{channel}:CLOGIC", logic)
-            time.sleep(0.05)
-        else:
-            self.set(f":PULSE0:GATE:LOGIC", logic)
-            time.sleep(0.05)
+    async def set_width(self, val):
+        ch = self.set_channel()
+        await self.set(f":PULSE{ch}:WIDT", f"{val:.9f}")
 
-    @property
-    def channel_gate_mode(self):
-        global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
-        time.sleep(0.05)
-        if global_gate_mode == "CHAN":
-            channel = self.set_channel()
-            mode = self.query(f":PULSE{channel}:CGATE").strip()
-            time.sleep(0.05)
-            return mode
-        else:
-            return "DIS"
-        
-    @channel_gate_mode.setter
-    def channel_gate_mode(self, channel_gate_mode):
-        global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
-        channel = self.set_channel()
-        time.sleep(0.05)
-        if global_gate_mode == "CHAN":
-            channel = self.set_channel()
-            self.set(f":PULSE{channel}:CGATE", channel_gate_mode)
-            time.sleep(0.05)
-        else:
-            self.set(f":PULSE0:GATE:MODE", "CHAN")
-            time.sleep(0.05)
-            self.set(f":PULSE{channel}:CGATE", channel_gate_mode)
-            time.sleep(0.05)
+    async def get_amplitude_mode(self):
+        ch = self.set_channel()
+        return (await self.query(f":PULSE{ch}:OUTP:MODE")).strip()
 
-    @property
-    def period(self):
-        period = float(self.query(":PULSE0:PER").strip())
-        time.sleep(0.05)
-        return period
-    
-    @period.setter
-    def period(self, period):
-        self.set(f":PULSE0:PER", str(period))
-        time.sleep(0.05)
+    async def set_amplitude_mode(self, mode):
+        ch = self.set_channel()
+        await self.set(f":PULSE{ch}:OUTP:MODE", mode)
 
-    @property
-    def delay(self):
-        channel = self.set_channel()
-        delay = float(self.query(f":PULSE{channel}:DELAY").strip())
-        time.sleep(0.05)
-        return delay
+    async def get_amplitude(self):
+        ch = self.set_channel()
+        return float((await self.query(f":PULSE{ch}:OUTP:AMPL")).strip())
 
-    @delay.setter
-    def delay(self, delay):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:DELAY", "{:10.9f}".format(delay))
-        time.sleep(0.05)
-
-    @property
-    def width(self):
-        channel = self.set_channel()
-        width = float(self.query(f":PULSE{channel}:WIDT").strip())
-        time.sleep(0.05)
-        return width
-    
-    @width.setter
-    def width(self, width):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:WIDT", "{:10.9f}".format(width))
-        time.sleep(0.05)
-
-    @property
-    def amplitude_mode(self):
-        channel = self.set_channel()
-        mode = self.query(f":PULSE{channel}:OUTP:MODE").strip()
-        time.sleep(0.05)
-        return mode
-    
-    @amplitude_mode.setter
-    def amplitude_mode(self, mode):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:OUTP:MODE", mode)
-        time.sleep(0.05)
-
-    @property
-    def amplitude(self):
-        channel = self.set_channel()
-        amp = float(self.query(f":PULSE{channel}:OUTP:AMPL").strip())
-        time.sleep(0.05)
-        return amp
-    
-    @amplitude.setter
-    def amplitude(self, amplitude):
-        amp_mode = self.amplitude_mode
-        if amp_mode == "ADJ":
-            channel = self.set_channel()
-            self.set(f":PULSE{channel}:OUTP:AMPL", str(amplitude))
-            time.sleep(0.05)
+    async def set_amplitude(self, val):
+        if (await self.get_amplitude_mode()) == "ADJ":
+            ch = self.set_channel()
+            await self.set(f":PULSE{ch}:OUTP:AMPL", str(val))
         else:
             return "In TTL mode. First, switch to ADJ mode."
 
-    @property
-    def polarity(self):
-        channel = self.set_channel()
-        pol = self.query(f":PULSE{channel}:POL").strip()
-        time.sleep(0.05)
-        return pol
-    
-    @polarity.setter
-    def polarity(self, pol):
-        channel = self.set_channel()
-        self.set(f":PULSE{channel}:POL", pol)
-        time.sleep(0.05)
+    async def get_polarity(self):
+        ch = self.set_channel()
+        return (await self.query(f":PULSE{ch}:POL")).strip()
 
-    def output(self):
-        out = {}
-        out['IP Address'] = self.ip
-        time.sleep(0.075)
-        out['Port'] = self.port
-        time.sleep(0.075)
-        out['Configuration Label'] = self.label
-        time.sleep(0.075)
-        out['Local Memory Slot'] = self.slot
-        time.sleep(0.075)
-        out['Global State'] = self.global_state
-        time.sleep(0.075)
-        out['Global Mode'] = self.global_mode
-        time.sleep(0.075)
-        out['Channel'] = self.channel_label
-        time.sleep(0.075)
-        out['Channel Mode'] = self.channel_mode
-        time.sleep(0.075)
-        out['Channel State'] = self.channel_state
-        time.sleep(0.075)
-        out['Width (ns)'] = self.width * 1e9
-        time.sleep(0.075)
-        out['Amplitude Mode'] = self.amplitude_mode
-        time.sleep(0.075)
-        out['Amplitude (V)'] = self.amplitude
-        time.sleep(0.075)
-        out['Polarity'] = self.polarity
-        time.sleep(0.075)
-        out['Delay (ns)'] = self.delay * 1e9
-        time.sleep(0.075)
-        out['Period (s)'] = self.period
-        time.sleep(0.075)
-        out['Trigger Mode'] = self.trig_mode
-        time.sleep(0.075)
-        out['Trigger Threshold (V)'] = self.trig_thresh
-        time.sleep(0.075)
-        out['Trigger Edge'] = self.trig_edge
-        time.sleep(0.075)
-        out['Global Gate Mode'] = self.gate_mode
-        time.sleep(0.075)
-        out['Channel Gate Mode'] = self.channel_gate_mode
-        time.sleep(0.075)
-        out['Gate Threshold (V)'] = self.gate_thresh
-        time.sleep(0.075)
-        out['Gate Logic'] = self.gate_logic
-        time.sleep(0.075)
+    async def set_polarity(self, pol):
+        ch = self.set_channel()
+        await self.set(f":PULSE{ch}:POL", pol)
 
-        return out
+async def output(self):
+    return [
+        {
+            'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
+                {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': await self.idn(), 'readonly': True},
+                {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': self.ip, 'default': self.ip},
+                {'title': 'Port', 'name': 'port', 'type': 'int', 'value': self.port, 'default': 2001}
+            ]
+        },
+        {
+            'title': 'Device Configuration State', 'name': 'config', 'type': 'group', 'children': [
+                {'title': 'Configuration Label', 'name': 'label', 'type': 'str', 'value': await self.get_label()},
+                {'title': 'Local Memory Slot', 'name': 'slot', 'type': 'list', 'value': self.slot, 'limits': list(range(1, 13))},
+                {'title': 'Save Current Configuration?', 'name': 'save', 'type': 'bool_push', 'label': 'Save', 'value': False},
+                {'title': 'Restore Previous Configuration?', 'name': 'restore', 'type': 'bool_push', 'label': 'Restore', 'value': False},
+                {'title': 'Reset Device?', 'name': 'reset', 'type': 'bool_push', 'label': 'Reset', 'value': False}
+            ]
+        },
+        {
+            'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
+                {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': await self.get_global_state(), 'default': "OFF", 'limits': ['ON', 'OFF']},
+                {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': await self.get_global_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
+                {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
+                {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': await self.get_channel_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
+                {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': await self.get_channel_state(), 'default': "OFF", 'limits': ['ON', 'OFF']},
+                {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': await self.get_width() * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
+                {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': await self.get_delay() * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
+            ]
+        },
+        {
+            'title': 'Amplitude Profile', 'name': 'amp', 'type': 'group', 'children': [
+                {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': await self.get_amplitude_mode(), 'limits': ['ADJ', 'TTL']},
+                {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': await self.get_amplitude(), 'default': 2.0, 'min': 2.0, 'max': 20.0},
+                {'title': 'Polarity', 'name': 'polarity', 'type': 'list', 'value': await self.get_polarity(), 'limits': ['NORM', 'COMP', 'INV']}
+            ]
+        },
+        {
+            'title': 'Continuous Mode', 'name': 'continuous_mode', 'type': 'group', 'children': [
+                {'title': 'Period (s)', 'name': 'period', 'type': 'float', 'value': await self.get_period(), 'default': 1e-3, 'min': 100e-9, 'max': 5000.0},
+                {'title': 'Repetition Rate (Hz)', 'name': 'rep_rate', 'type': 'float', 'value': 1.0 / await self.get_period(), 'default': 1e3, 'min': 2e-4, 'max': 10e6}
+            ]
+        },
+        {
+            'title': 'Trigger Mode', 'name': 'trigger_mode', 'type': 'group', 'children': [
+                {'title': 'Trigger Mode', 'name': 'trig_mode', 'type': 'list', 'value': await self.get_trig_mode(), 'limits': ['DIS', 'TRIG']},
+                {'title': 'Trigger Threshold (V)', 'name': 'trig_thresh', 'type': 'float', 'value': await self.get_trig_thresh(), 'default': 2.5, 'min': 0.2, 'max': 15.0},
+                {'title': 'Trigger Edge', 'name': 'trig_edge', 'type': 'list', 'value': await self.get_trig_edge(), 'limits': ['HIGH', 'LOW']}
+            ]
+        },
+        {
+            'title': 'Gating', 'name': 'gating', 'type': 'group', 'children': [
+                {'title': 'Global Gate Mode', 'name': 'gate_mode', 'type': 'list', 'value': await self.get_gate_mode(), 'limits': ['DIS', 'PULS', 'OUTP', 'CHAN']},
+                {'title': 'Channel Gate Mode', 'name': 'channel_gate_mode', 'type': 'list', 'value': await self.get_channel_gate_mode(), 'limits': ['DIS', 'PULS', 'OUTP']},
+                {'title': 'Gate Threshold (V)', 'name': 'gate_thresh', 'type': 'float', 'value': await self.get_gate_thresh(), 'default': 2.5, 'min': 0.2, 'max': 15.0},
+                {'title': 'Gate Logic', 'name': 'gate_logic', 'type': 'list', 'value': await self.get_gate_logic(), 'limits': ['HIGH', 'LOW']}
+            ]
+        }
+    ]
+
