@@ -199,62 +199,62 @@ class BNC575(AsyncDevice):
         ch = self.set_channel()
         await self.set(f":PULSE{ch}:POL", pol)
 
-async def output(self):
-    return [
-        {
-            'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
-                {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': await self.idn(), 'readonly': True},
-                {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': self.ip, 'default': self.ip},
-                {'title': 'Port', 'name': 'port', 'type': 'int', 'value': self.port, 'default': 2001}
-            ]
-        },
-        {
-            'title': 'Device Configuration State', 'name': 'config', 'type': 'group', 'children': [
-                {'title': 'Configuration Label', 'name': 'label', 'type': 'str', 'value': await self.get_label()},
-                {'title': 'Local Memory Slot', 'name': 'slot', 'type': 'list', 'value': self.slot, 'limits': list(range(1, 13))},
-                {'title': 'Save Current Configuration?', 'name': 'save', 'type': 'bool_push', 'label': 'Save', 'value': False},
-                {'title': 'Restore Previous Configuration?', 'name': 'restore', 'type': 'bool_push', 'label': 'Restore', 'value': False},
-                {'title': 'Reset Device?', 'name': 'reset', 'type': 'bool_push', 'label': 'Reset', 'value': False}
-            ]
-        },
-        {
-            'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
-                {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': await self.get_global_state(), 'default': "OFF", 'limits': ['ON', 'OFF']},
-                {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': await self.get_global_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-                {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
-                {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': await self.get_channel_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-                {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': await self.get_channel_state(), 'default': "OFF", 'limits': ['ON', 'OFF']},
-                {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': await self.get_width() * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
-                {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': await self.get_delay() * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
-            ]
-        },
-        {
-            'title': 'Amplitude Profile', 'name': 'amp', 'type': 'group', 'children': [
-                {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': await self.get_amplitude_mode(), 'limits': ['ADJ', 'TTL']},
-                {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': await self.get_amplitude(), 'default': 2.0, 'min': 2.0, 'max': 20.0},
-                {'title': 'Polarity', 'name': 'polarity', 'type': 'list', 'value': await self.get_polarity(), 'limits': ['NORM', 'COMP', 'INV']}
-            ]
-        },
-        {
-            'title': 'Continuous Mode', 'name': 'continuous_mode', 'type': 'group', 'children': [
-                {'title': 'Period (s)', 'name': 'period', 'type': 'float', 'value': await self.get_period(), 'default': 1e-3, 'min': 100e-9, 'max': 5000.0},
-                {'title': 'Repetition Rate (Hz)', 'name': 'rep_rate', 'type': 'float', 'value': 1.0 / await self.get_period(), 'default': 1e3, 'min': 2e-4, 'max': 10e6}
-            ]
-        },
-        {
-            'title': 'Trigger Mode', 'name': 'trigger_mode', 'type': 'group', 'children': [
-                {'title': 'Trigger Mode', 'name': 'trig_mode', 'type': 'list', 'value': await self.get_trig_mode(), 'limits': ['DIS', 'TRIG']},
-                {'title': 'Trigger Threshold (V)', 'name': 'trig_thresh', 'type': 'float', 'value': await self.get_trig_thresh(), 'default': 2.5, 'min': 0.2, 'max': 15.0},
-                {'title': 'Trigger Edge', 'name': 'trig_edge', 'type': 'list', 'value': await self.get_trig_edge(), 'limits': ['HIGH', 'LOW']}
-            ]
-        },
-        {
-            'title': 'Gating', 'name': 'gating', 'type': 'group', 'children': [
-                {'title': 'Global Gate Mode', 'name': 'gate_mode', 'type': 'list', 'value': await self.get_gate_mode(), 'limits': ['DIS', 'PULS', 'OUTP', 'CHAN']},
-                {'title': 'Channel Gate Mode', 'name': 'channel_gate_mode', 'type': 'list', 'value': await self.get_channel_gate_mode(), 'limits': ['DIS', 'PULS', 'OUTP']},
-                {'title': 'Gate Threshold (V)', 'name': 'gate_thresh', 'type': 'float', 'value': await self.get_gate_thresh(), 'default': 2.5, 'min': 0.2, 'max': 15.0},
-                {'title': 'Gate Logic', 'name': 'gate_logic', 'type': 'list', 'value': await self.get_gate_logic(), 'limits': ['HIGH', 'LOW']}
-            ]
-        }
-    ]
+    async def output(self):
+        return [
+            {
+                'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
+                    {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': await self.idn(), 'readonly': True},
+                    {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': self.ip, 'default': self.ip},
+                    {'title': 'Port', 'name': 'port', 'type': 'int', 'value': self.port, 'default': 2001}
+                ]
+            },
+            {
+                'title': 'Device Configuration State', 'name': 'config', 'type': 'group', 'children': [
+                    {'title': 'Configuration Label', 'name': 'label', 'type': 'str', 'value': await self.get_label()},
+                    {'title': 'Local Memory Slot', 'name': 'slot', 'type': 'list', 'value': self.slot, 'limits': list(range(1, 13))},
+                    {'title': 'Save Current Configuration?', 'name': 'save', 'type': 'bool_push', 'label': 'Save', 'value': False},
+                    {'title': 'Restore Previous Configuration?', 'name': 'restore', 'type': 'bool_push', 'label': 'Restore', 'value': False},
+                    {'title': 'Reset Device?', 'name': 'reset', 'type': 'bool_push', 'label': 'Reset', 'value': False}
+                ]
+            },
+            {
+                'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
+                    {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': await self.get_global_state(), 'default': "OFF", 'limits': ['ON', 'OFF']},
+                    {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': await self.get_global_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
+                    {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
+                    {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': await self.get_channel_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
+                    {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': await self.get_channel_state(), 'default': "OFF", 'limits': ['ON', 'OFF']},
+                    {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': await self.get_width() * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
+                    {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': await self.get_delay() * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
+                ]
+            },
+            {
+                'title': 'Amplitude Profile', 'name': 'amp', 'type': 'group', 'children': [
+                    {'title': 'Amplitude Mode', 'name': 'amplitude_mode', 'type': 'list', 'value': await self.get_amplitude_mode(), 'limits': ['ADJ', 'TTL']},
+                    {'title': 'Amplitude (V)', 'name': 'amplitude', 'type': 'float', 'value': await self.get_amplitude(), 'default': 2.0, 'min': 2.0, 'max': 20.0},
+                    {'title': 'Polarity', 'name': 'polarity', 'type': 'list', 'value': await self.get_polarity(), 'limits': ['NORM', 'COMP', 'INV']}
+                ]
+            },
+            {
+                'title': 'Continuous Mode', 'name': 'continuous_mode', 'type': 'group', 'children': [
+                    {'title': 'Period (s)', 'name': 'period', 'type': 'float', 'value': await self.get_period(), 'default': 1e-3, 'min': 100e-9, 'max': 5000.0},
+                    {'title': 'Repetition Rate (Hz)', 'name': 'rep_rate', 'type': 'float', 'value': 1.0 / await self.get_period(), 'default': 1e3, 'min': 2e-4, 'max': 10e6}
+                ]
+            },
+            {
+                'title': 'Trigger Mode', 'name': 'trigger_mode', 'type': 'group', 'children': [
+                    {'title': 'Trigger Mode', 'name': 'trig_mode', 'type': 'list', 'value': await self.get_trig_mode(), 'limits': ['DIS', 'TRIG']},
+                    {'title': 'Trigger Threshold (V)', 'name': 'trig_thresh', 'type': 'float', 'value': await self.get_trig_thresh(), 'default': 2.5, 'min': 0.2, 'max': 15.0},
+                    {'title': 'Trigger Edge', 'name': 'trig_edge', 'type': 'list', 'value': await self.get_trig_edge(), 'limits': ['HIGH', 'LOW']}
+                ]
+            },
+            {
+                'title': 'Gating', 'name': 'gating', 'type': 'group', 'children': [
+                    {'title': 'Global Gate Mode', 'name': 'gate_mode', 'type': 'list', 'value': await self.get_gate_mode(), 'limits': ['DIS', 'PULS', 'OUTP', 'CHAN']},
+                    {'title': 'Channel Gate Mode', 'name': 'channel_gate_mode', 'type': 'list', 'value': await self.get_channel_gate_mode(), 'limits': ['DIS', 'PULS', 'OUTP']},
+                    {'title': 'Gate Threshold (V)', 'name': 'gate_thresh', 'type': 'float', 'value': await self.get_gate_thresh(), 'default': 2.5, 'min': 0.2, 'max': 15.0},
+                    {'title': 'Gate Logic', 'name': 'gate_logic', 'type': 'list', 'value': await self.get_gate_logic(), 'limits': ['HIGH', 'LOW']}
+                ]
+            }
+        ]
 

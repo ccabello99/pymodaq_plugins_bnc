@@ -37,6 +37,7 @@ class Device:
             msg += ":"+i
         return msg
 
+
 class AsyncDevice:
     def __init__(self, ip, port):
         self._ip = ip
@@ -75,5 +76,16 @@ class AsyncDevice:
 
     def concat(self, commands):
         return ''.join([f":{cmd}" for cmd in commands])
+
+    async def close(self):
+        if self.writer:
+            print(f"Closing connection to {self._ip}:{self._port}")
+            self.writer.close()
+            try:
+                await self.writer.wait_closed()
+            except Exception as e:
+                print(f"Error while closing: {e}")
+            self.reader = None
+            self.writer = None
 
 
