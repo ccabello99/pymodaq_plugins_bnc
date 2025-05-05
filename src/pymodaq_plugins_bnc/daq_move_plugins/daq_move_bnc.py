@@ -178,6 +178,8 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.attributes = self.controller.output()
         self.settings.addChildren(self.attributes)
         self.update_params_ui()
+        self.settings.child('bounds').hide()
+        self.settings.child('scaling').hide()
         
 
         info = "Device initialized successfully"
