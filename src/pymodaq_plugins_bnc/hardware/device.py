@@ -1,6 +1,5 @@
 import telnetlib
-import time
-from qtpy import QtCore
+from qtpy.QtCore import QObject, Signal
 
 class Device:
     def __init__(self, ip, port):
@@ -17,13 +16,11 @@ class Device:
                 self.com.write(msg.encode())
                 print("SENDING:", msg)
                 sent = True
-                time.sleep(0.075)
-                message = self.com.read_eager().decode()
+                message = self.com.read_until(b"\n", timeout=1).decode().strip()
+                self.listener.ok_received.emit()
                 print("RECEIVED:", message)
             except OSError:
                 self.com.open(self._ip, self._port, 100)
-        if message == 'ok':
-            self.listener.ok_received.emit()
         return message
 
     def query(self,msg):
@@ -40,5 +37,5 @@ class Device:
             msg += ":"+i
         return msg
     
-    class DeviceListener(QtCore.QObject):
-        ok_received = QtCore.pyqtSignal()
+    class DeviceListener(QObject):
+        ok_received = Signal()

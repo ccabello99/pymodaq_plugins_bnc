@@ -1,6 +1,6 @@
 import time
 from pymodaq_plugins_bnc.hardware.device import Device
-from qtpy import QtCore
+from qtpy.QtCore import QThread
 
 class BNC575(Device):
 
@@ -17,13 +17,13 @@ class BNC575(Device):
     def check_ok(self):
         start = time.time()
         while not self.received:
-            QtCore.QThread.msleep(10)
+            QThread.msleep(20)
             if time.time() - start > 3:  # 3-second timeout
-                raise TimeoutError("Timeout waiting for device response")
+                print("Timeout waiting for device response")
+                return ''
         self.received = False
 
     def idn(self):
-        self.received = False
         idn = self.query("*IDN").strip()
         self.check_ok()
         return idn
@@ -37,7 +37,6 @@ class BNC575(Device):
         return self._port
 
     def reset(self):
-        self.received = False
         self.send("*RST")
         self.check_ok()
 
@@ -53,56 +52,47 @@ class BNC575(Device):
         self._slot = slot
     
     def save_state(self):
-        self.received = False
         self.set("*SAV", str(self.slot))
         self.check_ok()
     
     def restore_state(self):
-        self.received = False
         self.set("*RCL", str(self.slot))
         self.check_ok()
     
     def trig(self):
-        self.received = False
         self.send("*TRG")
         self.check_ok()
     
     @property
     def label(self):
-        self.received = False
         lbl = self.query("*LBL").strip()
         self.check_ok()
         return lbl
     
     @label.setter
     def label(self, label):
-        self.received = False
         self.set("*LBL", "\"" + label + "\"")
         self.check_ok()
         
     @property
     def global_state(self):
-        self.received = False
         state = self.query(":INST:STATE").strip()
         self.check_ok()
         return "ON" if state == "1" else "OFF"
 
     @global_state.setter
     def global_state(self, state):
-        self.received = False
         self.set(":INST:STATE", state)
         self.check_ok()
     
     @property
     def global_mode(self):
-        self.received = False
         mode = self.query(":PULSE0:MODE")
         self.check_ok()
         return mode
     
     @global_mode.setter
     def global_mode(self, mode):
-        self.received = False
         self.set(":PULSE0:MODE", mode)
         self.check_ok()
         
@@ -123,7 +113,6 @@ class BNC575(Device):
         
     @property
     def channel_mode(self):
-        self.received = False
         channel = self.set_channel()
         mode = self.query(f":PULSE{channel}:CMOD").strip()
         self.check_ok()
@@ -131,14 +120,12 @@ class BNC575(Device):
 
     @channel_mode.setter
     def channel_mode(self, mode):
-        self.received = False
         channel = self.set_channel()
         self.set(f":PULSE{channel}:CMOD", mode)
         self.check_ok()
         
     @property
     def channel_state(self):
-        self.received = False
         channel = self.set_channel()
         state = self.query(f":PULSE{channel}:STATE").strip()
         self.check_ok()
@@ -146,79 +133,67 @@ class BNC575(Device):
 
     @channel_state.setter    
     def channel_state(self, state):
-        self.received = False
         channel = self.set_channel()
         self.set(f":PULSE{channel}:STATE", state)
         self.check_ok()
 
     @property
     def trig_mode(self):
-        self.received = False
         trig_mode = self.query(":PULSE0:TRIG:MODE").strip()
         self.check_ok()
         return trig_mode
 
     @trig_mode.setter
     def trig_mode(self, mode):
-        self.received = False
         self.set(f":PULSE0:TRIG:MODE", mode)
         self.check_ok()
         
     @property        
     def trig_thresh(self):
-        self.received = False
         thresh = float(self.query(":PULSE0:TRIG:LEV").strip())
         self.check_ok()
         return thresh
     
     @trig_thresh.setter
     def trig_thresh(self, thresh):
-        self.received = False
         self.set(f":PULSE0:TRIG:LEV", str(thresh))
         self.check_ok()
 
     @property
     def trig_edge(self):
-        self.received = False
         edge = self.query(":PULSE0:TRIG:EDGE").strip()
         self.check_ok()
         return edge
     
     @trig_edge.setter
     def trig_edge(self, edge):
-        self.received = False
         self.set(f":PULSE0:TRIG:EDGE", edge)
         self.check_ok()
 
     @property
     def gate_mode(self):
-        self.received = False
         gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         self.check_ok()
         return gate_mode
 
     @gate_mode.setter
     def gate_mode(self, mode):
-        self.received = False
         self.set(f":PULSE0:GATE:MODE", mode)
         self.check_ok()
 
     @property        
     def gate_thresh(self):
-        self.received = False
         thresh = float(self.query(":PULSE0:GATE:LEV").strip())
         self.check_ok()
         return thresh
     
     @gate_thresh.setter
     def gate_thresh(self, thresh):
-        self.received = False
         self.set(f":PULSE0:GATE:LEV", str(thresh))
         self.check_ok()
 
     @property
     def gate_logic(self):
-        self.received = False
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         self.check_ok()
         if global_gate_mode == "CHAN":
@@ -233,7 +208,6 @@ class BNC575(Device):
         
     @gate_logic.setter
     def gate_logic(self, logic):
-        self.received = False
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         self.check_ok()
         if global_gate_mode == "CHAN":
@@ -246,7 +220,6 @@ class BNC575(Device):
 
     @property
     def channel_gate_mode(self):
-        self.received = False
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         self.check_ok()
         if global_gate_mode == "CHAN":
@@ -259,7 +232,6 @@ class BNC575(Device):
         
     @channel_gate_mode.setter
     def channel_gate_mode(self, channel_gate_mode):
-        self.received = False
         global_gate_mode = self.query(":PULSE0:GATE:MODE").strip()
         self.check_ok()
         channel = self.set_channel()
@@ -274,20 +246,17 @@ class BNC575(Device):
 
     @property
     def period(self):
-        self.received = False
         period = float(self.query(":PULSE0:PER").strip())
         self.check_ok()
         return period
     
     @period.setter
     def period(self, period):
-        self.received = False
         self.set(f":PULSE0:PER", str(period))
         self.check_ok()
 
     @property
     def delay(self):
-        self.received = False
         channel = self.set_channel()
         delay = float(self.query(f":PULSE{channel}:DELAY").strip())
         self.check_ok()
@@ -295,14 +264,12 @@ class BNC575(Device):
 
     @delay.setter
     def delay(self, delay):
-        self.received = False
         channel = self.set_channel()
         self.set(f":PULSE{channel}:DELAY", "{:10.9f}".format(delay))
         self.check_ok()
 
     @property
     def width(self):
-        self.received = False
         channel = self.set_channel()
         width = float(self.query(f":PULSE{channel}:WIDT").strip())
         self.check_ok()
@@ -310,14 +277,12 @@ class BNC575(Device):
     
     @width.setter
     def width(self, width):
-        self.received = False
         channel = self.set_channel()
         self.set(f":PULSE{channel}:WIDT", "{:10.9f}".format(width))
         self.check_ok()
 
     @property
     def amplitude_mode(self):
-        self.received = False
         channel = self.set_channel()
         mode = self.query(f":PULSE{channel}:OUTP:MODE").strip()
         self.check_ok()
@@ -325,14 +290,12 @@ class BNC575(Device):
     
     @amplitude_mode.setter
     def amplitude_mode(self, mode):
-        self.received = False
         channel = self.set_channel()
         self.set(f":PULSE{channel}:OUTP:MODE", mode)
         self.check_ok()
 
     @property
     def amplitude(self):
-        self.received = False
         channel = self.set_channel()
         amp = float(self.query(f":PULSE{channel}:OUTP:AMPL").strip())
         self.check_ok()
@@ -340,7 +303,6 @@ class BNC575(Device):
     
     @amplitude.setter
     def amplitude(self, amplitude):
-        self.received = False
         amp_mode = self.amplitude_mode
         if amp_mode == "ADJ":
             channel = self.set_channel()
@@ -351,7 +313,6 @@ class BNC575(Device):
 
     @property
     def polarity(self):
-        self.received = False
         channel = self.set_channel()
         pol = self.query(f":PULSE{channel}:POL").strip()
         self.check_ok()
@@ -359,12 +320,19 @@ class BNC575(Device):
     
     @polarity.setter
     def polarity(self, pol):
-        self.received = False
         channel = self.set_channel()
         self.set(f":PULSE{channel}:POL", pol)
         self.check_ok()
 
     def output(self):
+        if self.global_state == 1:
+            global_state = True
+        else:
+            global_state = False
+        if self.channel_state == 1:
+            channel_state = True
+        else:
+            channel_state = False
         return [
             {
                 'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
@@ -384,11 +352,11 @@ class BNC575(Device):
             },
             {
                 'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
-                    {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': self.global_state, 'default': "OFF", 'limits': ['ON', 'OFF']},
+                    {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': global_state},
                     {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': self.global_mode, 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
                     {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
                     {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': self.channel_mode, 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-                    {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': self.channel_state, 'default': "OFF", 'limits': ['ON', 'OFF']},
+                    {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': channel_state},
                     {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': self.width * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
                     {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': self.delay * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
                 ]

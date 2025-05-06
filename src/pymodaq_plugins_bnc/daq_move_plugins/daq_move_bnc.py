@@ -8,21 +8,11 @@ from typing import Union, List, Dict, Tuple
 
 
 class DAQ_Move_bnc(DAQ_Move_base):
-    """ Instrument plugin class for an actuator.
-    
-    This object inherits all functionalities to communicate with PyMoDAQ’s DAQ_Move module through inheritance via
-    DAQ_Move_base. It makes a bridge between the DAQ_Move module and the Python wrapper of a particular instrument.
-
+    """
         * This is compatible with the BNC 575 Delay/Pulse Generator
         * Tested on PyMoDAQ 4.1.1
         * Tested on Python 3.8.18
         * No additional drivers necessary
-
-    Attributes:
-    -----------
-    controller: object
-        The particular object that allow the communication with the hardware, in general a python wrapper around the
-         hardware library.
 
     """
     is_multiaxes = False
@@ -173,10 +163,16 @@ class DAQ_Move_bnc(DAQ_Move_base):
 
         if self.is_master:  # is needed when controller is master
             self.controller = BNC575("192.168.178.146", 2001)
+            
+        # Give a bit of time for device connection to be established
+        QtCore.QThread.msleep(50)
 
         # Update UI with relevant parameters & their current values
         self.attributes = self.controller.output()
-        self.settings.addChildren(self.attributes)
+        try:
+            self.settings.addChildren(self.attributes)
+        except ValueError:
+            pass # dictionary has already been added
         self.update_params_ui()
         self.settings.child('bounds').hide()
         self.settings.child('scaling').hide()
