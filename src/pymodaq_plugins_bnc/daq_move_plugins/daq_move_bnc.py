@@ -106,16 +106,28 @@ class DAQ_Move_bnc(DAQ_Move_base):
                 self.get_config()
         elif param.name() == "global_state":
             if param.value():
+<<<<<<< HEAD
                 self.controller.global_state = "ON"
             else:
                 self.controller.global_state = "OFF"
+=======
+                self.controller.set_global_state('ON')
+            else param.value():
+                self.controller.set_global_state('OFF')    
+>>>>>>> 8ef305a260ba497a0c83ba425715f5483ae532b0
         elif param.name() == "global_mode":
             self.controller.global_mode = param.value()
         elif param.name() == "channel_state":
             if param.value():
+<<<<<<< HEAD
                 self.controller.channel_state = "ON"
             else:
                 self.controller.channel_state = "OFF"
+=======
+                self.controller.set_global_state('ON')
+            else param.value():
+                self.controller.set_global_state('OFF')
+>>>>>>> 8ef305a260ba497a0c83ba425715f5483ae532b0
         elif param.name() == "channel_mode":
             self.controller.channel_mode = param.value()
         elif param.name() == "channel_label":
