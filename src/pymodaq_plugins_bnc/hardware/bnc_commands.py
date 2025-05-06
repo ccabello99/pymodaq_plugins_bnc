@@ -384,7 +384,6 @@ class BNC575(Device):
             },
             {
                 'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
-<<<<<<< HEAD
                     {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': self.global_state, 'default': "OFF", 'limits': ['ON', 'OFF']},
                     {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': self.global_mode, 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
                     {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
@@ -392,15 +391,6 @@ class BNC575(Device):
                     {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': self.channel_state, 'default': "OFF", 'limits': ['ON', 'OFF']},
                     {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': self.width * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
                     {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': self.delay * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
-=======
-                    {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': await self.get_global_state(), 'default': False},
-                    {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': await self.get_global_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-                    {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
-                    {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': await self.get_channel_mode(), 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-                    {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': await self.get_channel_state(), 'default': False},
-                    {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': await self.get_width() * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
-                    {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': await self.get_delay() * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
->>>>>>> 8ef305a260ba497a0c83ba425715f5483ae532b0
                 ]
             },
             {
