@@ -44,8 +44,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         -------
         float: The delay obtained after scaling conversion.
         """
-        delay = DataActuator(data=self.controller.get_delay()*1e9)
-        delay = self.get_position_with_scaling(delay)
+        delay = DataActuator(data=self.controller.delay*1e9)
 
         return delay
     
@@ -57,7 +56,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         -------
         bool: if True, PyMoDAQ considers the target value has been reached
         """
-        if self.controller.get_delay() == self.settings.child('output', 'delay'):
+        if self.controller.delay*1e9 == self.settings.child('output', 'delay'):
             return True
         else:
             return False 
@@ -91,7 +90,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
             self.controller = self.ini_stage_init(old_controller=None,
                                               new_controller=BNC575(ip, param.value()))
         elif param.name() == "label":
-            self.controller.set_label(param.value())
+            self.controller.label = param.value()
         elif param.name() == "slot":
            self.controller.slot = param.value()
         elif param.name() == "save":
@@ -106,48 +105,54 @@ class DAQ_Move_bnc(DAQ_Move_base):
                 self.controller.reset()
                 self.get_config()
         elif param.name() == "global_state":
-            self.controller.set_global_state(param.value())
+            if param.value():
+                self.controller.global_state = "ON"
+            else:
+                self.controller.global_state = "OFF"
         elif param.name() == "global_mode":
-            self.controller.set_global_mode(param.value())
+            self.controller.global_mode = param.value()
         elif param.name() == "channel_state":
-            self.controller.set_channel_state(param.value())
+            if param.value():
+                self.controller.channel_state = "ON"
+            else:
+                self.controller.channel_state = "OFF"
         elif param.name() == "channel_mode":
-            self.controller.set_channel_mode(param.value())
+            self.controller.channel_mode = param.value()
         elif param.name() == "channel_label":
            self.controller.channel_label = param.value()
            self.get_config()
         elif param.name() == "delay":
-            self.controller.set_delay(param.value()) * 1e-9
+            self.controller.delay = param.value() * 1e-9
             self.get_actuator_value()
         elif param.name() == "width":
-            self.controller.set_width(param.value()) * 1e-9
+            self.controller.width = param.value() * 1e-9
         elif param.name() == "amplitude_mode":
-            self.controller.set_amplitude_mode(param.value())
+            self.controller.amplitude_mode = param.value()
         elif param.name() == "amplitude":
-            self.controller.set_amplitude(param.value())
+            self.controller.amplitude = param.value()
         elif param.name() == "polarity":
-            self.controller.set_polarity(param.value())
+            self.controller.polarity = param.value()
         elif param.name() == "period":
-            self.controller.set_period(param.value())
-            self.settings.child('continuous_mode',  'rep_rate').setValue(1 / self.controller.get_period())
+            self.controller.period = param.value()
+            self.settings.child('continuous_mode',  'rep_rate').setValue(1 / self.controller.period)
         elif param.name() == "rep_rate":
-            self.controller.set_period(1 / param.value())
-            self.settings.child('continuous_mode',  'period').setValue(self.controller.get_period())
+            self.controller.period(1 / param.value())
+            self.settings.child('continuous_mode',  'period').setValue(self.controller.period)
         elif param.name() == "trig_mode":
-            self.controller.set_trig_mode(param.value())
+            self.controller.trig_mode = param.value()
         elif param.name() == "trig_thresh":
-            self.controller.set_trig_thresh(param.value())
+            self.controller.trig_thresh = param.value()
         elif param.name() == "trig_edge":
-            self.controller.set_trig_edge(param.value())
+            self.controller.trig_edge = param.value()
         elif param.name() == "gate_mode":
-            self.controller.set_gate_mode(param.value())
+            self.controller.gate_mode = param.value()
         elif param.name() == "channel_gate_mode":
-            self.controller.set_channel_gate_mode(param.value())
+            self.controller.channel_gate_mode = param.value()
             self.settings.child('gating',  'gate_mode').setValue(self.controller.get_gate_mode())
         elif param.name() == "gate_thresh":
-            self.controller.set_gate_thresh(param.value())
+            self.controller.gate_thresh = param.value()
         elif param.name() == "gate_logic":            
-            self.controller.set_gate_logic(param.value())
+            self.controller.gate_logic = param.value()
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -168,11 +173,6 @@ class DAQ_Move_bnc(DAQ_Move_base):
 
         if self.is_master:  # is needed when controller is master
             self.controller = BNC575("192.168.178.146", 2001)
-        
-        # Initialize device state
-        self.settings.child('connection',  'ip').setValue(self.controller.ip)
-        self.settings.child('connection',  'port').setValue(self.controller.port)
-        self.controller.restore_state()
 
         # Update UI with relevant parameters & their current values
         self.attributes = self.controller.output()
@@ -183,6 +183,10 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.settings.child('units').hide()
         self.settings.child('epsilon').hide()
         
+        # Initialize device state
+        self.settings.child('connection',  'ip').setValue(self.controller.ip)
+        self.settings.child('connection',  'port').setValue(self.controller.port)
+        self.controller.restore_state()
 
         info = "Device initialized successfully"
         initialized = True
@@ -198,7 +202,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        self.controller.set_delay(self.target_value * 1e-9)
+        self.controller.delay = self.target_value * 1e-9
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -209,12 +213,12 @@ class DAQ_Move_bnc(DAQ_Move_base):
         value = self.check_bound(self.current_position + value) - self.current_position
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
-        self.controller.set_delay(self.target_value * 1e-9)
+        self.controller.delay = self.target_value * 1e-9
         self.emit_status(ThreadCommand('Update_Status', ['Moving delay by: {}'.format(value.value())]))
 
     def move_home(self):
         """Call the reference method of the controller"""
-        self.controller.set_delay(0)
+        self.controller.delay = 0
         self.emit_status(ThreadCommand('Update_Status', ['Moving to zero position']))
         self.poll_moving()
 
