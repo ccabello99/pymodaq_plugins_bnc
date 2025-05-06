@@ -78,7 +78,7 @@ class BNC575(Device):
     def global_state(self):
         state = self.query(":INST:STATE").strip()
         self.check_ok()
-        return "ON" if state == "1" else "OFF"
+        return True if state == "1" else False
 
     @global_state.setter
     def global_state(self, state):
@@ -129,7 +129,7 @@ class BNC575(Device):
         channel = self.set_channel()
         state = self.query(f":PULSE{channel}:STATE").strip()
         self.check_ok()
-        return "ON" if state == "1" else "OFF"
+        return True if state == "1" else False
 
     @channel_state.setter    
     def channel_state(self, state):
@@ -325,20 +325,13 @@ class BNC575(Device):
         self.check_ok()
 
     def output(self):
-        if self.global_state == 1:
-            global_state = True
-        else:
-            global_state = False
-        if self.channel_state == 1:
-            channel_state = True
-        else:
-            channel_state = False
         return [
             {
                 'title': 'Connection', 'name': 'connection', 'type': 'group', 'children': [
                     {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': self.idn(), 'readonly': True},
                     {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': self.ip, 'default': self.ip},
-                    {'title': 'Port', 'name': 'port', 'type': 'int', 'value': self.port, 'default': 2001}
+                    {'title': 'Port', 'name': 'port', 'type': 'int', 'value': self.port, 'default': 2001},
+                    {'title': 'Still Communicating ?', 'name': 'still_com', 'type': 'led', 'value': self.still_communicating}
                 ]
             },
             {
@@ -352,11 +345,11 @@ class BNC575(Device):
             },
             {
                 'title': 'Device Output State', 'name': 'output', 'type': 'group', 'children': [
-                    {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': global_state},
+                    {'title': 'Global State', 'name': 'global_state', 'type': 'led_push', 'value': self.global_state},
                     {'title': 'Global Mode', 'name': 'global_mode', 'type': 'list', 'value': self.global_mode, 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
                     {'title': 'Channel', 'name': 'channel_label', 'type': 'list', 'value': self.channel_label, 'limits': ['A', 'B', 'C', 'D']},
                     {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': self.channel_mode, 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
-                    {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': channel_state},
+                    {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': self.channel_state},
                     {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': self.width * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
                     {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': self.delay * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
                 ]

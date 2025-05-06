@@ -7,21 +7,26 @@ class Device:
         self._ip = ip
         self._port = port
         self.listener = self.DeviceListener()
+        self.still_communicating = False
 
     def send(self, msg):
         sent = False
         msg += "\r\n"
-        while not sent:
-            try:
-                self.com.write(msg.encode())
-                print("SENDING:", msg)
-                sent = True
-                message = self.com.read_until(b"\n", timeout=1).decode().strip()
-                self.listener.ok_received.emit()
-                print("RECEIVED:", message)
-            except OSError:
-                self.com.open(self._ip, self._port, 100)
-        return message
+        self.still_communicating = True  # <-- SET TRUE AT START
+        try:
+            while not sent:
+                try:
+                    self.com.write(msg.encode())
+                    print("SENDING:", msg)
+                    sent = True
+                    message = self.com.read_until(b"\n", timeout=1).decode().strip()
+                    self.listener.ok_received.emit()
+                    print("RECEIVED:", message)
+                except OSError:
+                    self.com.open(self._ip, self._port, 100)
+            return message
+        finally:
+            self.still_communicating = False  # <-- ALWAYS SET FALSE AT END
 
     def query(self,msg):
         msg = msg+"?"
