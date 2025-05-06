@@ -410,7 +410,7 @@ class BNC575(Device):
                 'title': 'Trigger Mode', 'name': 'trigger_mode', 'type': 'group', 'children': [
                     {'title': 'Trigger Mode', 'name': 'trig_mode', 'type': 'list', 'value': self.trig_mode, 'limits': ['DIS', 'TRIG']},
                     {'title': 'Trigger Threshold (V)', 'name': 'trig_thresh', 'type': 'float', 'value': self.trig_thresh, 'default': 2.5, 'min': 0.2, 'max': 15.0},
-                    {'title': 'Trigger Edge', 'name': 'trig_edge', 'type': 'list', 'value': self.trig_edge, 'limits': ['RISING', 'FALLING']}
+                    {'title': 'Trigger Edge', 'name': 'trig_edge', 'type': 'list', 'value': self.trig_edge, 'limits': ['RIS', 'FALL']}
                 ]
             },
             {
