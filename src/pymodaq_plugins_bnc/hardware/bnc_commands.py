@@ -351,7 +351,7 @@ class BNC575(Device):
                     {'title': 'Channel Mode', 'name': 'channel_mode', 'type': 'list', 'value': self.channel_mode, 'limits': ['NORM', 'SING', 'BURS', 'DCYC']},
                     {'title': 'Channel State', 'name': 'channel_state', 'type': 'led_push', 'value': self.channel_state},
                     {'title': 'Width (ns)', 'name': 'width', 'type': 'float', 'value': self.width * 1e9, 'default': 10, 'min': 10, 'max': 999e9},
-                    {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': self.delay * 1e9, 'default': 0, 'min': 0, 'max': 999.0}
+                    {'title': 'Delay (ns)', 'name': 'delay', 'type': 'float', 'value': self.delay * 1e9, 'default': 0, 'min': 0, 'max': 999e9}
                 ]
             },
             {

@@ -46,10 +46,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         -------
         bool: if True, PyMoDAQ considers the target value has been reached
         """
-        if self.controller.delay*1e9 == self.settings.child('output', 'delay'):
-            return True
-        else:
-            return False 
+        return True
 
     def close(self):
         """Terminate the communication protocol"""
@@ -198,7 +195,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        self.controller.delay = self.target_value * 1e-9
+        self.controller.delay = (self.target_value).value() * 1e-9
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -209,7 +206,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
         value = self.check_bound(self.current_position + value) - self.current_position
         self.target_value = value + self.current_position
         value = self.set_position_relative_with_scaling(value)
-        self.controller.delay = self.target_value * 1e-9
+        self.controller.delay = (self.target_value).value() * 1e-9
         self.emit_status(ThreadCommand('Update_Status', ['Moving delay by: {}'.format(value.value())]))
 
     def move_home(self):
