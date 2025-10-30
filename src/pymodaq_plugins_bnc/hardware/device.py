@@ -12,7 +12,7 @@ class Device:
     def send(self, msg):
         sent = False
         msg += "\r\n"
-        self.still_communicating = True  # <-- SET TRUE AT START
+        self.listener.still_communicating.emit(True)
         try:
             while not sent:
                 try:
@@ -26,7 +26,7 @@ class Device:
                     self.com.open(self._ip, self._port, 100)
             return message
         finally:
-            self.still_communicating = False  # <-- ALWAYS SET FALSE AT END
+            self.listener.still_communicating.emit(False)
 
     def query(self,msg):
         msg = msg+"?"
@@ -44,3 +44,4 @@ class Device:
     
     class DeviceListener(QObject):
         ok_received = Signal()
+        still_communicating = Signal(bool)

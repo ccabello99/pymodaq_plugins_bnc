@@ -181,6 +181,9 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.settings.child('connection',  'port').setValue(self.controller.port)
         self.controller.restore_state()
 
+        # Connect still communicating signal
+        self.controller.listener.still_communicating.connect(lambda still_communicating: self._on_device_communication_state_change(still_communicating))
+
         info = "Device initialized successfully"
         initialized = True
         return info, initialized
@@ -219,6 +222,11 @@ class DAQ_Move_bnc(DAQ_Move_base):
       """Stop the actuator and emits move_done signal"""
       self.move_done()
       self.poll_moving()
+
+    def _on_device_communication_state_change(self, still_communicating):
+        param = self.settings.child('connection', 'still_communicating')
+        param.setValue(still_communicating)
+        param.sigValueChanged.emit(param, still_communicating)
 
     def update_params_ui(self):
         # Update UI with current parameter values

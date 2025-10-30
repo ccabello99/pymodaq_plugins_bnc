@@ -331,7 +331,7 @@ class BNC575(Device):
                     {'title': 'Controller', 'name': 'id', 'type': 'str', 'value': self.idn(), 'readonly': True},
                     {'title': 'IP', 'name': 'ip', 'type': 'str', 'value': self.ip, 'default': self.ip},
                     {'title': 'Port', 'name': 'port', 'type': 'int', 'value': self.port, 'default': 2001},
-                    {'title': 'Still Communicating ?', 'name': 'still_com', 'type': 'led', 'value': self.still_communicating}
+                    {'title': 'Still Communicating ?', 'name': 'still_communicating', 'type': 'led', 'value': False}
                 ]
             },
             {
