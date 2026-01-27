@@ -11,6 +11,8 @@ class BNC575(Device):
         self.listener.ok_received.connect(self.ok_received)
         self.received = False
         self.channel_attributes = ["channel_mode", "channel_state", "width", "delay", "amplitude_mode", "amplitude", "polarity"]
+        self.parent_index_dict = {"connection": 0, "config": 1, "output": 2, "amp": 3, "continuous_mode": 4, "trigger_mode": 5, "gating": 6}
+        self.children_index_dict = {"channel_mode": 3, "channel_state": 4, "width": 5, "delay": 6, "amplitude_mode": 0, "amplitude": 1, "polarity": 2}
         self.channel_attributes_parent_dict = {"channel_mode": "output", 
                 "channel_state": "output", 
                 "width": "output", 

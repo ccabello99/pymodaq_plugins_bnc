@@ -60,13 +60,16 @@ class DAQ_Move_bnc(DAQ_Move_base):
     def get_channel_config(self):
         """Get current parameters for channel only and update their values in the UI"""
         for name in self.controller.channel_attributes:
-            param = self.settings.child(self.controller.channel_attributes_parent_dict[name], name)
+            parent_name = self.controller.channel_attributes_parent_dict[name]
+            param = self.settings.child(parent_name, name)
             value = getattr(self.controller, name)
             if name == "width" or name == "delay":
                 value *= 1e9
+            idx = self.controller.parent_index_dict[parent_name]
+            idx_ = self.controller.children_index_dict[name]
+            self.attributes[idx]["children"][idx_]["value"] = value
             param.setValue(value)
             param.sigValueChanged.emit(param, value)
-
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
