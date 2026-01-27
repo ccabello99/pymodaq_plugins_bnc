@@ -10,6 +10,14 @@ class BNC575(Device):
         self.slot = 1
         self.listener.ok_received.connect(self.ok_received)
         self.received = False
+        self.channel_attributes = ["channel_mode", "channel_state", "width", "delay", "amplitude_mode", "amplitude", "polarity"]
+        self.channel_attributes_parent_dict = {"channel_mode": "output", 
+                "channel_state": "output", 
+                "width": "output", 
+                "delay": "output", 
+                "amplitude_mode": "amp", 
+                "amplitude": "amp", 
+                "polarity": "amp"}
 
     def ok_received(self):
         self.received = True

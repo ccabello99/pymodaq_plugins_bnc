@@ -57,6 +57,16 @@ class DAQ_Move_bnc(DAQ_Move_base):
         self.attributes = self.controller.output()
         self.update_params_ui()
 
+    def get_channel_config(self):
+        """Get current parameters for channel only and update their values in the UI"""
+        for name in self.controller.channel_attributes:
+            param = self.settings.child(self.controller.channel_attributes_parent_dict[name], name)
+            value = getattr(self.controller, name)
+            if name == "width" or name == "delay":
+                value *= 1e9
+            param.setValue(value)
+            param.sigValueChanged.emit(param, value)
+
 
     def commit_settings(self, param: Parameter):
         """Apply the consequences of a change of value in the detector settings
@@ -107,7 +117,7 @@ class DAQ_Move_bnc(DAQ_Move_base):
             self.controller.channel_mode = param.value()
         elif param.name() == "channel_label":
            self.controller.channel_label = param.value()
-           self.get_config()
+           self.get_channel_config()
         elif param.name() == "delay":
             self.controller.delay = param.value() * 1e-9
             self.get_actuator_value()
@@ -245,13 +255,15 @@ class DAQ_Move_bnc(DAQ_Move_base):
 
                     try:
                         # Set the value
-                        self.settings.child(param_name, child_name).setValue(value)
+                        param_ = self.settings.child(param_name, child_name)
+                        param_.setValue(value)
+                        param_.sigValueChanged.emit(param_, value)
 
                         # Set limits if defined
                         if 'limits' in child and not child.get('readonly', False):
                             try:
                                 limits = child['limits']
-                                self.settings.child(param_name, child_name).setLimits(limits)
+                                param_.setLimits(limits)
                             except Exception:
                                 pass
 
@@ -265,12 +277,14 @@ class DAQ_Move_bnc(DAQ_Move_base):
 
                 try:
                     # Set the value
-                    self.settings.param(param_name).setValue(value)
+                    param_ = self.settings.param(param_name)
+                    param_.setValue(value)
+                    param_.sigValueChanged.emit(param_, value)                    
 
                     if 'limits' in param and not param.get('readonly', False):
                         try:
                             limits = param['limits']
-                            self.settings.param(param_name).setLimits(limits)
+                            param_.setLimits(limits)
                         except Exception:
                             pass
                 except Exception:
